@@ -439,6 +439,91 @@ svg{ display:block; }
 }
 .rt-toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 
+/* ---------- 搜索历史 / 歌手维度 / 推荐 ---------- */
+.search-hist{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:10px 2px 2px; }
+.sh-label{ font-size:12px; color:var(--text-3); margin-right:2px; }
+.artist-chips{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:8px 2px 10px; }
+.hint-note.inline{ display:inline; margin:0 0 0 10px; }
+.hero-actions{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:14px 0 4px; }
+.rec-card{ margin-bottom:16px; }
+.song-artist{ cursor:pointer; }
+.song-artist:hover{ color:var(--accent-2); }
+
+/* ---------- 歌单批量管理 ---------- */
+.pl-manage-bar{
+  position:sticky; bottom:calc(var(--player-h) + 10px);
+  margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background:var(--bg-2); border:1px solid var(--line-strong);
+  border-radius:12px; padding:10px 14px; box-shadow:var(--shadow);
+}
+.pl-manage-bar span{ flex:1; font-size:13px; color:var(--text-2); }
+.song-row.sel{ background:var(--bg-3); outline:1px solid var(--accent); }
+
+/* ---------- 听歌统计 ---------- */
+.stat-inline{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+.stat-mini{ background:var(--bg-3); border:1px solid var(--line); border-radius:12px; padding:10px 8px; text-align:center; }
+.stat-mini b{ display:block; font-size:17px; color:var(--accent-2); font-variant-numeric:tabular-nums; }
+.stat-mini span{ font-size:11.5px; color:var(--text-3); }
+.rank-list{ display:flex; flex-direction:column; gap:2px; }
+.rank-row{ display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:9px; font-size:13.5px; }
+.rank-row:hover{ background:var(--bg-3); }
+.rank-no{ flex:none; width:20px; text-align:center; color:var(--text-3); font-weight:700; font-variant-numeric:tabular-nums; }
+.rank-row.top .rank-no{ color:var(--accent-2); }
+.rank-name{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rank-num{ flex:none; font-size:12px; color:var(--text-3); font-variant-numeric:tabular-nums; }
+
+/* ---------- 设置项微调 ---------- */
+.jam-id-input{ flex:1; min-width:120px; }
+.backup-row{ gap:8px; flex-wrap:wrap; }
+.set-row .btn{ margin:2px 0; }
+
+/* ---------- 迷你播放器（大图播放页 + 歌词） ---------- */
+.mini-player{
+  position:relative; width:100%; max-width:560px; overflow:hidden;
+  background:var(--bg-1); border:1px solid var(--line-strong);
+  border-radius:20px; box-shadow:var(--shadow);
+  padding:26px 24px 22px; text-align:center;
+}
+.mp-bg{
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  opacity:.16; filter:blur(34px); transform:scale(1.15);
+  pointer-events:none;
+}
+.mini-player > *:not(.mp-bg){ position:relative; }
+.mp-close{
+  position:absolute; top:12px; right:14px; z-index:2;
+  width:34px; height:34px; border-radius:50%;
+  background:var(--bg-3); color:var(--text-2);
+  font-size:14px; display:flex; align-items:center; justify-content:center;
+}
+.mp-close:hover{ color:var(--text-1); }
+.mp-cover img{
+  width:220px; height:220px; border-radius:18px; object-fit:cover;
+  box-shadow:0 18px 46px rgba(0,0,0,.45); margin:6px auto 14px;
+}
+.mp-meta{ margin-bottom:12px; }
+.mp-title{ font-size:18px; font-weight:700; }
+.mp-artist{ font-size:13px; color:var(--text-3); margin-top:2px; }
+.mp-lyrics{
+  height:150px; overflow-y:auto; text-align:center;
+  padding:8px 6px; margin-bottom:12px;
+  background:rgba(0,0,0,.12); border-radius:12px;
+  scroll-behavior:smooth;
+}
+[data-theme="light"] .mp-lyrics{ background:rgba(23,52,99,.05); }
+.mp-lyr-empty{ color:var(--text-3); font-size:13px; padding-top:50px; }
+.mp-lyr-plain{ font-size:13px; color:var(--text-2); line-height:1.9; }
+.mp-lyr-line{
+  font-size:14px; color:var(--text-3); padding:5px 2px;
+  transition:color .15s, transform .15s;
+}
+.mp-lyr-line.on{ color:var(--accent-2); font-weight:700; transform:scale(1.03); }
+.mp-ctrl{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; }
+.mp-ctrl .pb-play{ width:52px; height:52px; }
+.mp-progress{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.mp-tools{ display:flex; align-items:center; justify-content:center; gap:6px; }
+
 /* ---------- 响应式 ---------- */
 @media (max-width:760px){
   #main{ padding:14px 12px 30px; }
@@ -454,6 +539,10 @@ svg{ display:block; }
   .pb-progress{ flex:1; min-width:70px; }
   .pb-vol-range{ display:none; }
   .pb-queue{ padding:8px 12px 14px; }
+  .mini-player{ padding:20px 14px 18px; border-radius:16px; }
+  .mp-cover img{ width:150px; height:150px; }
+  .mp-lyrics{ height:120px; }
+  .modal-mask{ padding:12px; }
 }
 @media (max-width:420px){
   .tnav-btn{ padding:7px 10px; font-size:13px; }

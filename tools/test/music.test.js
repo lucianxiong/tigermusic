@@ -121,3 +121,82 @@ test('deepClone 深拷贝', function(){
   c.b.c.push(3);
   assert.equal(o.b.c.length, 2);
 });
+
+test('lrcURL 仅含非空参数', function(){
+  const url = U.lrcURL('Taylor Swift', 'Love Story', 'Fearless', 235);
+  assert.ok(url.indexOf('lrclib.net/api/get') >= 0);
+  assert.ok(url.indexOf('artist_name=Taylor%20Swift') >= 0);
+  assert.ok(url.indexOf('track_name=Love%20Story') >= 0);
+  assert.ok(url.indexOf('duration=235') >= 0);
+  const bare = U.lrcURL('', 'Only Title', '', 0);
+  assert.ok(bare.indexOf('artist_name') < 0);
+  assert.ok(bare.indexOf('track_name=Only%20Title') >= 0);
+  assert.ok(bare.indexOf('duration') < 0);
+});
+
+test('parseLRC 解析时间戳并升序', function(){
+  const lines = U.parseLRC('[00:17.44] We were both young\n[00:21.38] I close my eyes\n[00:24.84] I\'m standing there');
+  assert.equal(lines.length, 3);
+  assert.equal(lines[0].t, 17.44);
+  assert.equal(lines[0].line, 'We were both young');
+  assert.equal(lines[1].t, 21.38);
+  assert.ok(lines[1].t > lines[0].t);
+  assert.deepEqual(U.parseLRC(''), []);
+  assert.equal(U.parseLRC('无时间戳的一行').length, 0);
+});
+
+test('parseLRC 支持分钟与纯文本行', function(){
+  const lines = U.parseLRC('[01:02.500] long line\n[0:59] near one minute\n[01:02.000] earlier');
+  assert.equal(lines.length, 3);
+  assert.equal(lines[0].t, 59);
+  assert.equal(lines[1].t, 62);
+  assert.equal(lines[2].t, 62.5);
+  assert.equal(lines[2].line, 'long line');
+});
+
+test('lrcIndexAt 返回当前行下标', function(){
+  const lines = [{ t: 0, line: 'A' }, { t: 10, line: 'B' }, { t: 20, line: 'C' }];
+  assert.equal(U.lrcIndexAt(lines, -1), 0);
+  assert.equal(U.lrcIndexAt(lines, 5), 0);
+  assert.equal(U.lrcIndexAt(lines, 10), 1);
+  assert.equal(U.lrcIndexAt(lines, 99), 2);
+  assert.equal(U.lrcIndexAt([], 5), 0);
+});
+
+test('jamendoSearchURL 携带 client_id 与参数', function(){
+  const url = U.jamendoSearchURL('piano', 12, 'demo-key');
+  assert.ok(url.indexOf('api.jamendo.com/v3.0/tracks/') >= 0);
+  assert.ok(url.indexOf('client_id=demo-key') >= 0);
+  assert.ok(url.indexOf('search=piano') >= 0);
+  assert.ok(url.indexOf('limit=12') >= 0);
+  assert.ok(url.indexOf('include=musicinfo') >= 0);
+  assert.equal(U.jamendoSearchURL('x', 999, 'k').indexOf('limit=50') >= 0, true);
+});
+
+test('bumpStats 累加播放与时长', function(){
+  let s = {};
+  s = U.bumpStats(s, 'a', 1, 30000);
+  s = U.bumpStats(s, 'a', 1, 120000);
+  s = U.bumpStats(s, 'b', 1, 60000);
+  assert.equal(s.a.plays, 2);
+  assert.equal(s.a.ms, 150000);
+  assert.equal(s.b.plays, 1);
+  assert.ok(s.a.lastAt > 0);
+});
+
+test('topStats 按播放次数排序取前 n', function(){
+  const s = { x: { plays: 3, ms: 100 }, y: { plays: 9, ms: 50 }, z: { plays: 3, ms: 900 } };
+  const top = U.topStats(s, 2);
+  assert.equal(top[0].id, 'y');
+  assert.equal(top.length, 2);
+  assert.equal(U.topStats(null, 3).length, 0);
+});
+
+test('statsSummary 汇总', function(){
+  const s = { a: { plays: 2, ms: 30000 }, b: { plays: 5, ms: 120000 } };
+  const sum = U.statsSummary(s);
+  assert.equal(sum.plays, 7);
+  assert.equal(sum.ms, 150000);
+  assert.equal(sum.songs, 2);
+  assert.deepEqual(U.statsSummary({}), { plays: 0, ms: 0, songs: 0 });
+});
