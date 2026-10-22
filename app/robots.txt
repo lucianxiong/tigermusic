@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://lucianxiong.github.io/tiger-music/sitemap.xml
+Sitemap: https://tigermusic.duckdns.org/sitemap.xml
