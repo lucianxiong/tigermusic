@@ -2,7 +2,7 @@
 
 在线音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，Windows / Android / 浏览器三端同源。收藏、最近播放与自定义歌单全部保存在本机，不注册账号、不收集个人信息。
 
-- 🌐 网页版（在线听歌）：https://tigermusic.pages.dev/ （原地址 https://lucianxiong.github.io/tiger-music/ 自动跳转至该域名）
+- 🌐 网页版（在线听歌）：https://tigermusic.pages.dev/
 - 📦 源码仓库：https://github.com/lucianxiong/tiger-music
 - 🔒 隐私说明：https://tigermusic.pages.dev/PRIVACY.md
 
