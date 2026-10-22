@@ -73,4 +73,4 @@ npm run apk:debug    # 打 Android 调试包（需 JDK 21 + Android SDK）
 - 所有在线内容版权归各自权利人所有；试听片段仅作试听用途，公共领域曲目可全曲播放。
 - 应用不收集、不上传任何个人信息或用户数据。
 - 隐私说明见 `app/PRIVACY.md`。
-- 站点已提交 Google 搜索收录与百度站长平台收录（sitemap：`/sitemap.xml`）。
+- 站点面向搜索引擎收录已准备：`app/robots.txt` 与 `app/sitemap.xml` 随网页版发布；提交 Google 搜索收录与百度站长平台收录需要站长账号操作（见「发布」章节）。
