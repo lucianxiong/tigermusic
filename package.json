@@ -1,7 +1,7 @@
 {
   "name": "tiger-music",
   "productName": "蓝虎听歌",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "本地优先音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，收藏与歌单保存在本机",
   "author": "蓝虎听歌",
   "license": "UNLICENSED",

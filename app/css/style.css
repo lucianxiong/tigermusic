@@ -550,3 +550,31 @@ svg{ display:block; }
   .pb-btn{ width:30px; height:30px; }
   .pb-play{ width:38px; height:38px; }
 }
+
+/* ---------- v1.2：免费曲库聚合搜索 / 维基音频 / 歌手百科 / MV 与评分 ---------- */
+.src-block{ margin-top:14px; }
+.src-head{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; color:var(--muted, #8a8f98); }
+.src-dot{ width:8px; height:8px; border-radius:50%; }
+.src-dot.free{ background:#3ecf8e; }
+.src-dot.preview{ background:#f5a524; }
+.src-name{ font-weight:600; }
+.src-count{ margin-left:auto; font-variant-numeric:tabular-nums; }
+
+.wiki-thumb{ width:96px; height:96px; object-fit:cover; border-radius:12px; float:left; margin:0 14px 10px 0; }
+.wiki-text{ margin:0; line-height:1.75; font-size:14px; white-space:pre-wrap; }
+.wiki-actions{ flex-wrap:wrap; gap:8px; }
+.wiki-actions .btn{ text-decoration:none; }
+
+.mp-extras{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line, rgba(255,255,255,.08)); display:flex; flex-direction:column; gap:10px; }
+.mp-mv-btn{ display:inline-flex; align-items:center; gap:7px; align-self:flex-start; padding:8px 16px; border-radius:999px;
+  background:var(--accent, #2f6bff); color:#fff; font-size:14px; font-weight:600; text-decoration:none; border:0; cursor:pointer; }
+.mp-mv-btn svg{ flex:none; }
+.mp-score{ display:flex; align-items:center; gap:8px; font-size:13px; }
+.score-label{ color:var(--muted, #8a8f98); }
+.score-val{ font-weight:700; letter-spacing:.5px; }
+.score-val.muted{ font-weight:400; }
+.mp-links{ display:flex; flex-wrap:wrap; gap:8px; }
+.ext-link{ display:inline-block; padding:5px 12px; border-radius:999px; font-size:12px; text-decoration:none;
+  border:1px solid var(--line, rgba(255,255,255,.14)); color:var(--text, #e8e8ea); }
+.ext-link:hover{ border-color:var(--accent, #2f6bff); color:var(--accent, #2f6bff); }
+

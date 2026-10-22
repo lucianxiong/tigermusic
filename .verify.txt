@@ -1,0 +1,3 @@
+ST0={'previewRows': 24, 'chips': 6, 'heads': 1}
+WIKI2={'actions': '搜索歌曲 | 百度百科 | 维基百科 | 豆瓣 | RYM | Last.fm | Metacritic', 'wikiLen': 0, 'thumb': False}
+CONSOLE_ERRORS=[{'level': 'error', 'text': 'Failed to load resource: the server responded with a status of 503 ()', 'timestamp': None}, {'level': 'error', 'text': 'Failed to load resource: net::ERR_CONNECTION_CLOSED', 'timestamp': None}]

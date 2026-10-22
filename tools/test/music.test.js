@@ -200,3 +200,40 @@ test('statsSummary 汇总', function(){
   assert.equal(sum.songs, 2);
   assert.deepEqual(U.statsSummary({}), { plays: 0, ms: 0, songs: 0 });
 });
+
+test('wikiTitleFor 规范化条目名', function(){
+  assert.equal(U.wikiTitleFor('周杰伦（歌手）'), '周杰伦');
+  assert.equal(U.wikiTitleFor('Taylor Swift'), 'Taylor_Swift');
+  assert.equal(U.wikiTitleFor('甲, 乙'), '甲');
+  assert.equal(U.wikiTitleFor('  A   B  '), 'A_B');
+  assert.ok(U.wikiTitleFor('x').length <= 120);
+});
+
+test('baikeTitleFor 规范化百度百科名', function(){
+  assert.equal(U.baikeTitleFor('周杰伦（歌手）'), '周杰伦');
+  assert.equal(U.baikeTitleFor('Taylor Swift'), 'Taylor Swift');
+  assert.equal(U.baikeTitleFor('甲,乙'), '甲');
+});
+
+test('youtubeSearchURL 拼接歌手与歌名', function(){
+  const u = U.youtubeSearchURL('周杰伦', '晴天');
+  assert.ok(u.indexOf('results?search_query=') >= 0);
+  assert.ok(decodeURIComponent(u).indexOf('晴天 MV') >= 0);
+});
+
+test('biliSearchURL 拼接哔哩搜索', function(){
+  const u = U.biliSearchURL('周杰伦', '晴天');
+  assert.ok(u.indexOf('search.bilibili.com/all?keyword=') >= 0);
+  assert.ok(decodeURIComponent(u).indexOf('晴天 MV') >= 0);
+});
+
+test('externalLinks 生成权威站入口', function(){
+  const l = U.externalLinks('周杰伦', '叶惠美');
+  assert.ok(l.rymArtist.indexOf('rateyourmusic.com') >= 0);
+  assert.ok(decodeURIComponent(l.rymAlbum).indexOf('叶惠美') >= 0);
+  assert.ok(l.baike.indexOf('baike.baidu.com/item/') >= 0);
+  assert.ok(l.wiki.indexOf('zh.wikipedia.org/wiki/') >= 0);
+  assert.ok(l.metacritic.indexOf('metacritic.com/search/') >= 0);
+  assert.ok(l.lastfm.indexOf('last.fm/music/') >= 0);
+  assert.ok(l.douban.indexOf('music.douban.com') >= 0);
+});

@@ -1,6 +1,7 @@
 /* 蓝虎听歌 · 主应用逻辑
- * 本地优先音乐应用：在线搜索试听（iTunes Search 30 秒预览）、公共领域曲库（Internet Archive 全曲）、
- * 本地音乐导入；收藏 / 最近播放 / 自定义歌单全部保存在本机 localStorage，不注册账号、不收集个人信息。
+ * 在线音乐应用：免费曲库优先（Internet Archive / Wikimedia Commons / Jamendo 全曲）、在线试听（iTunes 30 秒预览）、
+ * 本地音乐导入；歌词（LRCLIB）、歌手百科（维基百科 / 百度百科）、评分（MusicBrainz / RYM 等）。
+ * 收藏 / 最近播放 / 自定义歌单全部保存在本机 localStorage，不注册账号、不收集个人信息。
  * 依赖 js/music-utils.js（window.MusicUtils）。
  */
 (function(){
@@ -9,7 +10,7 @@
   window.__blueTigerMusic = true;
 
   const U = window.MusicUtils;
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.2.0';
   const STORE_PREFIX = 'ltm:';
 
   /* ---------- 基础工具 ---------- */
@@ -593,9 +594,8 @@
     host.innerHTML =
       '<section class="page home">' +
         '<div class="hero">' +
-          '<div class="hero-badge">' + T('本地优先 · 在线试听 · 三端通用', 'Local-first · Online preview · Windows / Android / Web') + '</div>' +
           '<h1 class="hero-title">' + T('听喜欢的歌，<br>也发现新的旋律', 'Play what you love,<br>discover what is new.') + '</h1>' +
-          '<div class="hero-sub">' + T('在线搜索试听、公共领域全曲、本地音乐导入，收藏与歌单都保存在本机。', 'Search & preview online, play public-domain tracks in full, import local music. Favorites and playlists stay on your device.') + '</div>' +
+          '<div class="hero-sub">' + T('免费曲库全曲播放、在线试听、本地导入，收藏与歌单都保存在本机。', 'Free catalogs in full length, online preview, local import. Favorites and playlists stay on your device.') + '</div>' +
           '<form class="search-box" id="homeSearch">' +
             '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
             '<input class="search-input" id="homeSearchInput" type="search" placeholder="' + T('搜索歌曲、歌手（在线试听）', 'Search songs or artists (online preview)') + '" autocomplete="off">' +
@@ -705,44 +705,32 @@
   }
 
   /* ---------- 渲染：曲库 ---------- */
-  function renderLibraryPage(host, initialTab, initialTerm){
-    const tabs = [
-      { k: 'online', t: T('在线搜索', 'Online search') },
-      { k: 'ia', t: T('公共曲库', 'Public domain') },
-      { k: 'jamendo', t: T('自由音乐', 'Free music') },
-      { k: 'local', t: T('本地文件', 'Local files') }
-    ];
-    let tab = initialTab || 'online';
-    let term = initialTerm || '';
+  /* ---------- 网络区域：大陆优先国内资源，国际优先国外资源 ---------- */
+  const CN_TZ = /^(Asia\/Shanghai|Asia\/Hong_Kong|Asia\/Macau|Asia\/Taipei|Asia\/Urumqi|Asia\/Chongqing|Asia\/Harbin)$/;
+  function detectRegion(){
+    try {
+      const lang = String(navigator.language || navigator.userLanguage || '').toLowerCase();
+      const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').replace(/\s/g, '');
+      if (lang.indexOf('zh') === 0 || CN_TZ.test(tz)) return 'cn';
+    } catch(e){}
+    return 'intl';
+  }
+  function regionNow(){
+    return PREF.region === 'cn' || PREF.region === 'intl' ? PREF.region : detectRegion();
+  }
+  /* MV 视频入口：大陆用户优先 Bilibili，国际用户优先 YouTube */
+  function mvURLFor(artist, title){
+    return regionNow() === 'cn' ? U.biliSearchURL(artist, title) : U.youtubeSearchURL(artist, title);
+  }
 
+  function renderLibraryPage(host, initialTab, initialTerm){
     host.innerHTML =
       '<section class="page">' +
         '<div class="page-head"><div class="page-title">' + T('曲库', 'Library') + '</div>' +
-        '<div class="ph-right">' + T('试听为 30 秒片段 · 公共曲库全曲', 'Previews 30s · Public domain in full') + '</div></div>' +
-        '<div class="tabbar" id="libTabs">' +
-          tabs.map(function(tb){ return '<button class="tab" type="button" data-tab="' + tb.k + '">' + tb.t + '</button>'; }).join('') +
-        '</div>' +
+        '<div class="ph-right">' + T('全部曲库整合 · 免费全曲优先', 'All catalogs in one search · free first') + '</div></div>' +
         '<div id="libBody"></div>' +
       '</section>';
-    const body = $('#libBody', host);
-    const tabbar = $('#libTabs', host);
-    tabbar.addEventListener('click', function(e){
-      const b = e.target.closest('[data-tab]');
-      if (!b) return;
-      tab = b.dataset.tab;
-      renderTab();
-    });
-    function paintTabs(){
-      $$('.tab', tabbar).forEach(function(t){ t.classList.toggle('on', t.dataset.tab === tab); });
-    }
-    function renderTab(){
-      paintTabs();
-      if (tab === 'online') renderOnline(body, term);
-      else if (tab === 'ia') renderIA(body, term);
-      else if (tab === 'jamendo') renderJamendo(body, term);
-      else renderLocal(body);
-    }
-    renderTab();
+    renderOnline($('#libBody', host), initialTerm || '');
   }
 
   /* 搜索历史条（曲库搜索框下方复用） */
@@ -775,19 +763,31 @@
       '</form>';
   }
 
+  /* 点击歌手打开歌手百科（代替原“点击歌手重搜”） */
+  function bindArtistWiki(container, songs){
+    if (container._artistHandler) container.removeEventListener('click', container._artistHandler, true);
+    container._artistHandler = function(e){
+      const artEl = e.target.closest('.song-artist');
+      if (!artEl) return;
+      e.stopImmediatePropagation();
+      const row = artEl.closest('.song-row');
+      const song = row ? songs[Number(row.dataset.idx)] : null;
+      if (song && song.artist) openArtistWiki(song.artist);
+    };
+    container.addEventListener('click', container._artistHandler, true);
+  }
+
   let lastItunesTerm = '';
 
   function renderOnline(body, initialTerm){
     lastItunesTerm = '';
-    const box = el(searchBoxHTML(T('搜索 iTunes 曲库（中文 / 英文均可）', 'Search the iTunes catalog (CN / EN)'), 'onlineSearch', T('搜索', 'Search')));
+    const box = el(searchBoxHTML(T('搜索歌曲、歌手（全部曲库整合 · 免费全曲优先）', 'Search songs or artists (all catalogs · free first)'), 'onlineSearch', T('搜索', 'Search')));
     const hist = el('<div id="onlineHist"></div>');
     hist.innerHTML = searchHistHTML(body);
-    const list = el('<div class="song-list" id="onlineList"></div>');
-    const note = el('<div class="hint-note">' + T('结果来自 Apple iTunes Search（30 秒试听预览），仅供试听参考。', 'Results from Apple iTunes Search (30s previews), for preview only.') + '</div>');
+    const list = el('<div id="onlineList"></div>');
     body.innerHTML = '';
     body.appendChild(box);
     body.appendChild(hist);
-    body.appendChild(note);
     body.appendChild(list);
     bindSearchHist(hist, function(t){ doSearch(t); });
 
@@ -800,13 +800,29 @@
     function doSearch(t){
       lastItunesTerm = t;
       list.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在搜索…', 'Searching…') + '</div></div>';
-      fetch(U.itunesSearchURL(t, 25))
-        .then(function(res){
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
+      const cn = regionNow() === 'cn';
+      const jamP = jamendoRowsFor(t);
+      if (cn){
+        /* 大陆：免费全曲优先（Jamendo，需配置 Client ID），试听为 iTunes（国内可达性最好） */
+        Promise.all([
+          jamP.catch(function(){ return []; }),
+          itunesRowsFor(t).catch(function(){ return []; })
+        ]).then(function(res){ renderResults(list, [], res[0], res[1], true); });
+      } else {
+        /* 国际：Internet Archive 公共曲库全曲优先 + Jamendo + iTunes 试听 */
+        Promise.all([
+          iaFreeRowsFor(t).catch(function(){ return []; }),
+          jamP.catch(function(){ return []; }),
+          itunesRowsFor(t).catch(function(){ return []; })
+        ]).then(function(res){ renderResults(list, res[0], res[1], res[2], false); });
+      }
+    }
+
+    function itunesRowsFor(t){
+      return fetch(U.itunesSearchURL(t, 25))
+        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
         .then(function(j){
-          const songs = (j.results || []).map(function(r){
+          return (j.results || []).map(function(r){
             return {
               id: 'it-' + r.trackId,
               title: r.trackName || '',
@@ -818,195 +834,25 @@
               source: 'itunes'
             };
           }).filter(function(s){ return s.src; });
-          if (!songs.length){
-            list.innerHTML = '<div class="list-empty">' + T('没有找到相关结果，换个关键词试试', 'No results. Try another keyword.') + '</div>';
-            return;
-          }
-          /* 歌手维度：提取唯一歌手 chips，点击按歌手重搜 */
-          const artistSet = {};
-          songs.forEach(function(s){ if (s.artist) artistSet[s.artist] = 1; });
-          const artists = Object.keys(artistSet).slice(0, 6);
-          let head = '';
-          if (artists.length > 1){
-            head = '<div class="artist-chips"><span class="sh-label">' + T('歌手', 'Artists') + '</span>' +
-              artists.map(function(a){ return '<button class="chip" type="button" data-artist="' + esc(a) + '">' + esc(a) + '</button>'; }).join('') +
-              '</div>';
-          }
-          list.innerHTML = head + songs.map(function(s, i){
-            return songRowHTML(s).replace('data-id="' + esc(s.id) + '"', 'data-id="' + esc(s.id) + '" data-idx="' + i + '"');
-          }).join('');
-          bindSongList(list, songs);
-          $$('.artist-chips .chip', list).forEach(function(c){
-            c.addEventListener('click', function(){
-              const a = c.dataset.artist;
-              if (a){ pushSearchHistory(a); doSearch(a); }
-            });
-          });
-          /* 行内歌手可点击重搜（捕获阶段拦截，避免与行播放冲突） */
-          if (list._artistHandler) list.removeEventListener('click', list._artistHandler, true);
-          list._artistHandler = function(e){
-            const artEl = e.target.closest('.song-artist');
-            if (!artEl) return;
-            e.stopImmediatePropagation();
-            const row = artEl.closest('.song-row');
-            if (!row) return;
-            const song = songs[Number(row.dataset.idx)];
-            if (song && song.artist){ pushSearchHistory(song.artist); doSearch(song.artist); }
-          };
-          list.addEventListener('click', list._artistHandler, true);
-        })
-        .catch(function(){
-          list.innerHTML = '<div class="err-banner">' + T('在线搜索失败：无法连接 iTunes 服务，请检查网络后重试。', 'Search failed: cannot reach the iTunes service. Check your network and retry.') +
-            '<button class="btn small ghost" type="button" id="retryOnline">' + T('重试', 'Retry') + '</button></div>';
-          const rb = $('#retryOnline', list);
-          if (rb) rb.addEventListener('click', function(){ doSearch(lastItunesTerm); });
         });
     }
 
-    if (initialTerm) doSearch(initialTerm);
-    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索并试听在线歌曲', 'Type a keyword to search & preview songs online.') + '</div>';
-  }
-
-  function renderIA(body, initialTerm){
-    const box = el(searchBoxHTML(T('搜索公共领域曲库（Internet Archive）', 'Search public-domain audio (Internet Archive)'), 'iaSearch', T('搜索', 'Search')));
-    const hist = el('<div id="iaHist"></div>');
-    hist.innerHTML = searchHistHTML(body);
-    const list = el('<div class="song-list" id="iaList"></div>');
-    const note = el('<div class="hint-note">' + T('全曲来自 Internet Archive 公共领域 / 开放授权音频；如当前网络无法访问 archive.org，会提示错误。', 'Full tracks from Internet Archive public-domain / open audio. If archive.org is unreachable, an error will show.') + '</div>');
-    body.innerHTML = '';
-    body.appendChild(box);
-    body.appendChild(hist);
-    body.appendChild(note);
-    body.appendChild(list);
-    bindSearchHist(hist, function(t){ doSearch(t); });
-
-    let lastTerm = '';
-
-    box.addEventListener('submit', function(e){
-      e.preventDefault();
-      const t = U.cleanTerm($('.search-input', box).value);
-      if (t){ pushSearchHistory(t); doSearch(t); }
-    });
-
-    function doSearch(t){
-      lastTerm = t;
-      list.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在搜索…', 'Searching…') + '</div></div>';
-      fetch(U.iaSearchURL(t, 16))
-        .then(function(res){
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
+    function iaFreeRowsFor(t){
+      return fetch(U.iaSearchURL(t, 10))
+        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
         .then(function(j){
-          const docs = (j.response && j.response.docs) || [];
-          if (!docs.length){
-            list.innerHTML = '<div class="list-empty">' + T('没有找到相关结果', 'No results found.') + '</div>';
-            return;
-          }
-          const items = docs.map(function(d, i){
-            return { id: 'ia-' + d.identifier, identifier: d.identifier, title: d.title || d.identifier, creator: d.creator || '', downloads: d.downloads || 0, year: d.year || '', source: 'ia', idx: i };
+          return ((j.response && j.response.docs) || []).map(function(d){
+            return { id: 'ia-' + d.identifier, identifier: d.identifier, title: d.title || d.identifier, creator: d.creator || '', downloads: d.downloads || 0, year: d.year || '', source: 'ia' };
           });
-          list.innerHTML = items.map(function(it){
-            return '<div class="ia-row" data-idx="' + it.idx + '">' +
-              '<img class="song-cover" src="assets/logo/logo-64.png" alt="">' +
-              '<div class="song-meta"><div class="song-title">' + esc(it.title) + '</div>' +
-              '<div class="song-artist">' + esc(it.creator || it.identifier) + (it.year ? ' · ' + esc(it.year) : '') + '</div></div>' +
-              '<span class="song-src-tag">' + T('全曲', 'Full') + '</span>' +
-              '<span class="song-dur">' + (it.downloads ? T('下载 ' + it.downloads, it.downloads + ' downloads') : '') + '</span>' +
-              '<div class="row-actions"><span class="ia-loading" hidden></span>' +
-              '<button class="btn small primary" type="button" data-act="play">' + T('播放', 'Play') + '</button></div>' +
-            '</div>';
-          }).join('');
-          if (list._iaHandler) list.removeEventListener('click', list._iaHandler);
-          list._iaHandler = function(e){
-            const row = e.target.closest('.ia-row');
-            if (!row) return;
-            const it = items[Number(row.dataset.idx)];
-            if (!it || it.loading) return;
-            const actBtn = e.target.closest('[data-act]');
-            if (actBtn && actBtn.dataset.act === 'play'){
-              it.loading = true;
-              const btn = $('[data-act="play"]', row);
-              if (btn){ btn.disabled = true; btn.textContent = T('加载中…', 'Loading…'); }
-              loadIAItem({ identifier: it.identifier, title: it.title, creator: it.creator })
-                .catch(function(){ toast(T('该条目暂无可播放的音频文件', 'No playable audio found for this item')); })
-                .finally(function(){
-                  it.loading = false;
-                  if (btn){ btn.disabled = false; btn.textContent = T('播放', 'Play'); }
-                });
-            }
-          };
-          list.addEventListener('click', list._iaHandler);
-        })
-        .catch(function(){
-          list.innerHTML = '<div class="err-banner">' + T('无法连接 Internet Archive（archive.org），当前网络可能无法访问该服务。', 'Cannot reach Internet Archive (archive.org) — it may be blocked by your network.') +
-            '<button class="btn small ghost" type="button" id="retryIA">' + T('重试', 'Retry') + '</button></div>';
-          const rb = $('#retryIA', list);
-          if (rb) rb.addEventListener('click', function(){ doSearch(lastTerm); });
         });
     }
 
-    if (initialTerm) doSearch(initialTerm);
-    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索公共领域全曲', 'Type a keyword to search public-domain tracks.') + '</div>';
-  }
-
-  /* ---------- 渲染：Jamendo 自由音乐（需 client_id） ---------- */
-  function renderJamendo(body, initialTerm){
-    if (!PREF.jamendoClientId){
-      body.innerHTML =
-        '<div class="card">' +
-          '<div class="card-h"><div class="card-t">' + T('自由音乐（Jamendo）', 'Free music (Jamendo)') + '</div></div>' +
-          '<div class="hint-note">' + T('Jamendo 提供按创作共用许可发布的免费音乐全曲播放。需要免费注册获取 Client ID 后启用。', 'Jamendo offers full tracks under Creative Commons licenses. Register for a free Client ID to enable it.') + '</div>' +
-          '<div class="set-row"><span>' + T('Jamendo Client ID', 'Jamendo Client ID') + '</span>' +
-            '<input class="search-input jam-id-input" type="text" id="jmId" value="' + esc(PREF.jamendoClientId) + '" maxlength="64" placeholder="client_id">' +
-            '<button class="btn small primary" type="button" id="jmSave">' + T('保存并启用', 'Save & enable') + '</button></div>' +
-          '<div class="hint-note">' + T('获取方式：', 'How to get: ') +
-            '<a href="https://devs.jamendo.com/" target="_blank" rel="noopener noreferrer">devs.jamendo.com</a> ' +
-            T('注册开发者账号 → Create an application → 复制 Client ID 粘贴到上方。', 'sign up → Create an application → copy the Client ID above.') + '</div>' +
-        '</div>';
-      $('#jmSave', body).addEventListener('click', function(){
-        const v = U.cleanTerm($('#jmId', body).value);
-        if (!v){ toast(T('请输入 Client ID', 'Enter a Client ID')); return; }
-        PREF.jamendoClientId = v;
-        savePref();
-        toast(T('已启用 Jamendo 自由音乐', 'Jamendo enabled'));
-        renderJamendo(body, initialTerm);
-      });
-      return;
-    }
-    const box = el(searchBoxHTML(T('搜索 Jamendo 自由音乐（英文关键词更佳）', 'Search Jamendo free music (English works best)'), 'jamendoSearch', T('搜索', 'Search')));
-    const list = el('<div class="song-list" id="jamendoList"></div>');
-    const note = el('<div class="hint-note">' + T('全曲来自 Jamendo 创作共用授权音乐。', 'Full tracks from Jamendo Creative Commons music.') +
-      ' <button class="link-btn" type="button" id="jmReset">' + T('更换 Client ID', 'Change Client ID') + '</button></div>');
-    body.innerHTML = '';
-    body.appendChild(box);
-    body.appendChild(note);
-    body.appendChild(list);
-    $('#jmReset', body).addEventListener('click', function(){
-      PREF.jamendoClientId = '';
-      savePref();
-      renderJamendo(body, initialTerm);
-    });
-
-    box.addEventListener('submit', function(e){
-      e.preventDefault();
-      const t = U.cleanTerm($('.search-input', box).value);
-      if (t){ pushSearchHistory(t); doSearch(t); }
-    });
-
-    function doSearch(t){
-      list.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在搜索…', 'Searching…') + '</div></div>';
-      fetch(U.jamendoSearchURL(t, 16, PREF.jamendoClientId))
-        .then(function(res){
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
+    function jamendoRowsFor(t){
+      if (!PREF.jamendoClientId) return Promise.resolve([]);
+      return fetch(U.jamendoSearchURL(t, 10, PREF.jamendoClientId))
+        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
         .then(function(j){
-          const results = (j.results && j.results) || [];
-          if (!results.length){
-            list.innerHTML = '<div class="list-empty">' + T('没有找到相关结果', 'No results found.') + '</div>';
-            return;
-          }
-          const songs = results.map(function(r){
+          return ((j.results || [])).map(function(r){
             return {
               id: 'jm-' + r.id,
               title: r.name || '',
@@ -1019,25 +865,102 @@
               source: 'jamendo'
             };
           }).filter(function(s){ return s.src; });
-          if (!songs.length){
-            list.innerHTML = '<div class="list-empty">' + T('没有可播放的音频', 'No playable audio.') + '</div>';
-            return;
-          }
-          list.innerHTML = songs.map(function(s, i){
-            return songRowHTML(s).replace('data-id="' + esc(s.id) + '"', 'data-id="' + esc(s.id) + '" data-idx="' + i + '"');
-          }).join('');
-          bindSongList(list, songs);
-        })
-        .catch(function(){
-          list.innerHTML = '<div class="err-banner">' + T('无法连接 Jamendo，请检查 Client ID 与网络后重试。', 'Cannot reach Jamendo. Check the Client ID and network, then retry.') +
-            '<button class="btn small ghost" type="button" id="retryJamendo">' + T('重试', 'Retry') + '</button></div>';
-          const rb = $('#retryJamendo', list);
-          if (rb) rb.addEventListener('click', function(){ doSearch(U.cleanTerm($('.search-input', box).value) || ''); });
         });
     }
 
+    function srcBlock(dot, name, count, id){
+      return '<div class="src-block"><div class="src-head"><span class="src-dot ' + dot + '"></span><span class="src-name">' + name + '</span><span class="src-count">' + count + '</span></div><div class="song-list" id="' + id + '"></div></div>';
+    }
+
+    function renderResults(list, iaItems, jamRows, preview, cn){
+      let html = '';
+      if (!cn){
+        html += srcBlock('free', T('公共曲库 · 全曲播放（Internet Archive）', 'Public domain · full (Internet Archive)'), iaItems.length, 'freeList');
+        if (jamRows.length) html += srcBlock('free', T('自由音乐 · 全曲播放（Jamendo）', 'Free music · full (Jamendo)'), jamRows.length, 'jamList');
+      } else if (jamRows.length){
+        html += srcBlock('free', T('自由音乐 · 全曲播放（Jamendo）', 'Free music · full (Jamendo)'), jamRows.length, 'jamList');
+      } else {
+        html += '<div class="hint-note hint-card">' + T('国内免费全曲：请在「我的」页配置 Jamendo Client ID 后启用（免费注册）。', 'For free full tracks in China: configure a Jamendo Client ID in the Mine page (free sign-up).') + '</div>';
+      }
+      html += srcBlock('preview', T('在线试听 · 30 秒预览', 'Online preview · 30s'), preview.length, 'previewList');
+      list.innerHTML = html;
+
+      if (!cn){
+        const freeBox = $('#freeList', list);
+        if (!iaItems.length){
+          freeBox.innerHTML = '<div class="list-empty">' + T('未找到免费全曲（archive.org 当前网络可能受限）', 'No free tracks (archive.org may be blocked by your network)') + '</div>';
+        } else {
+          freeBox.innerHTML = iaItems.map(function(it, i){
+            return '<div class="ia-row" data-idx="' + i + '">' +
+              '<img class="song-cover" src="assets/logo/logo-64.png" alt="">' +
+              '<div class="song-meta"><div class="song-title">' + esc(it.title) + '</div>' +
+              '<div class="song-artist">' + esc(it.creator || it.identifier) + (it.year ? ' · ' + esc(it.year) : '') + '</div></div>' +
+              '<span class="song-src-tag">' + T('全曲', 'Full') + '</span>' +
+              '<span class="song-dur">' + (it.downloads ? T('下载 ' + it.downloads, it.downloads + ' downloads') : '') + '</span>' +
+              '<div class="row-actions"><span class="ia-loading" hidden></span>' +
+              '<button class="btn small primary" type="button" data-act="play">' + T('播放', 'Play') + '</button></div>' +
+            '</div>';
+          }).join('');
+          freeBox._iaHandler = function(e){
+            const row = e.target.closest('.ia-row');
+            if (!row) return;
+            const it = iaItems[Number(row.dataset.idx)];
+            if (!it || it.loading) return;
+            if (e.target.closest('[data-act="play"]')){
+              it.loading = true;
+              const btn = $('[data-act="play"]', row);
+              if (btn){ btn.disabled = true; btn.textContent = T('加载中…', 'Loading…'); }
+              loadIAItem({ identifier: it.identifier, title: it.title, creator: it.creator })
+                .catch(function(){ toast(T('该条目暂无可播放的音频文件', 'No playable audio found for this item')); })
+                .finally(function(){
+                  it.loading = false;
+                  if (btn){ btn.disabled = false; btn.textContent = T('播放', 'Play'); }
+                });
+            }
+          };
+          freeBox.addEventListener('click', freeBox._iaHandler);
+        }
+      }
+
+      if (jamRows.length){
+        const jamBox = $('#jamList', list);
+        jamBox.innerHTML = jamRows.map(function(s, i){
+          return songRowHTML(s).replace('data-id="' + esc(s.id) + '"', 'data-id="' + esc(s.id) + '" data-idx="' + i + '"');
+        }).join('');
+        bindSongList(jamBox, jamRows);
+        bindArtistWiki(jamBox, jamRows);
+      }
+
+      const prevBox = $('#previewList', list);
+      if (!preview.length){
+        prevBox.innerHTML = '<div class="list-empty">' + T('未找到在线试听结果，换个关键词试试', 'No previews found. Try another keyword.') + '</div>';
+      } else {
+        const artistSet = {};
+        preview.forEach(function(s){ if (s.artist) artistSet[s.artist] = 1; });
+        const artists = Object.keys(artistSet).slice(0, 6);
+        let head = '';
+        if (artists.length > 1){
+          head = '<div class="artist-chips"><span class="sh-label">' + T('歌手', 'Artists') + '</span>' +
+            artists.map(function(a){ return '<button class="chip" type="button" data-artist="' + esc(a) + '">' + esc(a) + '</button>'; }).join('') +
+            '</div>';
+        }
+        prevBox.innerHTML = head + preview.map(function(s, i){
+          return songRowHTML(s).replace('data-id="' + esc(s.id) + '"', 'data-id="' + esc(s.id) + '" data-idx="' + i + '"');
+        }).join('');
+        bindSongList(prevBox, preview);
+        bindArtistWiki(prevBox, preview);
+        $$('.artist-chips .chip', prevBox).forEach(function(c){
+          c.addEventListener('click', function(){ const a = c.dataset.artist; if (a) openArtistWiki(a); });
+        });
+      }
+
+      if (!cn && !iaItems.length && !jamRows.length && !preview.length){
+        list.innerHTML = '<div class="list-empty">' + T('没有找到相关结果，换个关键词试试', 'No results. Try another keyword.') + '</div>';
+      }
+    }
+
     if (initialTerm) doSearch(initialTerm);
-    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索 Jamendo 自由音乐全曲', 'Type a keyword to search Jamendo free tracks.') + '</div>';
+    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索全部曲库（免费全曲优先）', 'Type a keyword to search all catalogs (free full tracks first).') + '</div>';
   }
 
   function renderLocal(body){
@@ -1351,6 +1274,12 @@
               '</select></div>' +
             '<div class="set-row"><span>' + T('默认音量', 'Default volume') + '</span>' +
               '<input type="range" min="0" max="100" step="1" value="' + Math.round(PREF.volume * 100) + '" id="setVol"></div>' +
+            '<div class="set-row"><span>' + T('网络区域', 'Network region') + '</span>' +
+              '<select id="setRegion">' +
+                '<option value="auto">' + T('自动检测', 'Auto') + '</option>' +
+                '<option value="cn">' + T('中国大陆', 'Mainland China') + '</option>' +
+                '<option value="intl">' + T('国际', 'International') + '</option>' +
+              '</select></div>' +
           '</section>' +
           '<section class="card">' +
             '<div class="card-h"><div class="card-t">' + T('本地数据', 'Local data') + '</div></div>' +
@@ -1362,6 +1291,7 @@
               '<button class="btn small ghost" type="button" id="importData">' + T('导入备份', 'Import backup') + '</button>' +
               '<input type="file" id="importInput" accept=".json,application/json" hidden>' +
             '</div>' +
+            '<div class="set-row"><button class="btn small ghost" type="button" id="localMusicBtn">' + T('本地音乐', 'Local music') + '</button></div>' +
             '<div class="set-row"><button class="btn small ghost danger" type="button" id="clearData">' + T('清空本地数据', 'Clear local data') + '</button></div>' +
           '</section>' +
         '</div>' +
@@ -1385,13 +1315,14 @@
         '<section class="card about-card">' +
           '<div class="card-h"><div class="card-t">' + T('关于', 'About') + '</div></div>' +
           '<div class="about-line">蓝虎听歌 v' + APP_VERSION + '</div>' +
-          '<div class="about-line">' + T('本地优先 · 在线试听 · Windows / Android / 浏览器三端同源', 'Local-first · Online preview · Windows / Android / Web') + '</div>' +
+          '<div class="about-line">' + T('免费曲库优先 · 在线试听 · Windows / Android / 浏览器三端通用', 'Free catalogs first · Online preview · Windows / Android / Web') + '</div>' +
           '<div class="about-line">' + T('在线数据来源：', 'Online sources: ') + '</div>' +
           '<ul class="about-list">' +
-            '<li>' + T('在线试听：Apple iTunes Search 接口，仅提供每曲 30 秒预览，用于试听参考。', 'Online preview: Apple iTunes Search API, 30-second previews for reference only.') + '</li>' +
-            '<li>' + T('公共曲库：Internet Archive 公共领域 / 开放授权音频，可全曲播放。', 'Public domain: Internet Archive public-domain / openly licensed audio, full playback.') + '</li>' +
+            '<li>' + T('免费曲库：Internet Archive 公共领域 / 开放授权音频，可全曲播放。', 'Free catalog: Internet Archive public-domain / openly licensed audio, full playback.') + '</li>' +
             '<li>' + T('自由音乐：Jamendo 创作共用授权音频（需 Client ID），可全曲播放。', 'Free music: Jamendo Creative Commons audio (requires Client ID), full playback.') + '</li>' +
+            '<li>' + T('在线试听：Apple iTunes Search 接口，仅提供每曲 30 秒预览，用于试听参考。', 'Online preview: Apple iTunes Search API, 30-second previews for reference only.') + '</li>' +
             '<li>' + T('歌词：LRCLIB 公共歌词库，自动显示同步歌词（如可获取）。', 'Lyrics: LRCLIB public lyrics database, synced lyrics when available.') + '</li>' +
+            '<li>' + T('歌手百科：维基百科开放内容摘要；评分参考 MusicBrainz 社区评分，并收录 RYM 等权威网站评分入口。', 'Artist wiki: Wikipedia extracts; ratings from MusicBrainz community, with links to RYM and other authoritative sites.') + '</li>' +
             '<li>' + T('本地导入：仅在你的设备上读取所选音频文件，不上传任何内容。', 'Local import: audio files are read on your device only; nothing is uploaded.') + '</li>' +
           '</ul>' +
           '<div class="about-line">' + T('所有收藏、歌单与偏好仅保存在本机浏览器 / 应用存储中。', 'Favorites, playlists and preferences are stored only on this device.') + '</div>' +
@@ -1406,6 +1337,18 @@
     selLang.addEventListener('change', function(){ setLang(selLang.value); });
     const setVol = $('#setVol', host);
     setVol.addEventListener('input', function(){ setVolume(Number(setVol.value) / 100); });
+    const selRegion = $('#setRegion', host);
+    selRegion.value = PREF.region || 'auto';
+    selRegion.addEventListener('change', function(){
+      PREF.region = selRegion.value;
+      savePref();
+      toast(T('网络区域已更新：' + (PREF.region === 'cn' ? T('中国大陆', 'Mainland China') : (PREF.region === 'intl' ? T('国际', 'International') : T('自动检测', 'Auto'))), 'Region updated'));
+    });
+    const localBtn = $('#localMusicBtn', host);
+    if (localBtn) localBtn.addEventListener('click', function(){
+      const mask = openModal('<div class="modal-title">' + T('本地音乐', 'Local music') + '</div><div id="localBody"></div>');
+      renderLocal($('#localBody', mask));
+    });
     $('#exportData', host).addEventListener('click', exportBackup);
     $('#importData', host).addEventListener('click', function(){ $('#importInput', host).click(); });
     $('#importInput', host).addEventListener('change', function(){
@@ -1651,6 +1594,13 @@
       + '<div class="mp-meta"><div class="mp-title" id="mpTitle">' + esc(d.title) + '</div>'
       + '<div class="mp-artist" id="mpArtist">' + esc(d.artist) + (song.album ? ' · ' + esc(song.album) : '') + '</div></div>'
       + '<div class="mp-lyrics" id="mpLyrics"><div class="mp-lyr-empty">' + T('播放歌曲后显示歌词', 'Lyrics will show while playing.') + '</div></div>'
+      + '<div class="mp-extras">'
+      +   '<a class="mp-mv-btn" id="mpMvBtn" href="' + esc(mvURLFor(d.artist, d.title)) + '" target="_blank" rel="noopener noreferrer">'
+      +     '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>'
+      +     '<span>' + T('观看 MV', 'Watch MV') + '</span></a>'
+      +   '<div class="mp-score" id="mpScore"></div>'
+      +   '<div class="mp-links" id="mpLinks"></div>'
+      + '</div>'
       + '<div class="mp-ctrl">'
       +   '<button class="pb-btn" type="button" id="mpPrev" title="' + T('上一首', 'Previous') + '">'
       +     '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L9.5 12z"/></svg></button>'
@@ -1684,6 +1634,13 @@
     $('#mpShuffle', miniPlayerMask).addEventListener('click', toggleShuffle);
     $('#mpRepeat', miniPlayerMask).addEventListener('click', cycleRepeat);
     $('#mpSleep', miniPlayerMask).addEventListener('click', openSleepPicker);
+    const mpArt = $('#mpArtist', miniPlayerMask);
+    if (mpArt) mpArt.addEventListener('click', function(){
+      const txt = mpArt.textContent || '';
+      const artist = txt.split(' · ')[0].trim() || d.artist;
+      openArtistWiki(artist);
+    });
+    refreshScoreArea(song, miniPlayerMask);
   }
 
   function syncMiniPlayer(){
@@ -1715,6 +1672,13 @@
     }
     const sl = $('#mpSleep', miniPlayerMask);
     if (sl) sl.textContent = sleepTimer ? Math.max(1, Math.ceil((sleepTimer.until - Date.now()) / 60000)) + '′' : 'Zz';
+    /* 切歌时刷新 MV 链接与评分区 */
+    if (miniPlayerMask._scoreKey !== song.id){
+      miniPlayerMask._scoreKey = song.id;
+      const mv = $('#mpMvBtn', miniPlayerMask);
+      if (mv) mv.href = mvURLFor(d.artist, d.title);
+      refreshScoreArea(song, miniPlayerMask);
+    }
     if (isFinite(audio.duration)){
       const cur = $('#mpCur', miniPlayerMask);
       if (cur) cur.textContent = U.fmtTime(audio.currentTime);
@@ -1723,6 +1687,71 @@
       const seek = $('#mpSeek', miniPlayerMask);
       if (seek) seek.value = Math.round((audio.currentTime / audio.duration) * 1000);
     }
+  }
+
+  /* ---------- 评分（MusicBrainz 社区评分 + RYM / Metacritic / Last.fm / 豆瓣 权威入口） ---------- */
+  let lastMBReq = 0;
+  let mbCache2 = {};
+
+  function refreshScoreArea(song, mask){
+    const scoreEl = $('#mpScore', mask);
+    const linksEl = $('#mpLinks', mask);
+    if (!scoreEl || !linksEl) return;
+    const d = songDisplay(song);
+    const links = U.externalLinks(d.artist, song.album);
+    const items = [];
+    if (links.rymAlbum) items.push([T('RYM 专辑评分', 'RYM album'), links.rymAlbum]);
+    if (links.rymArtist) items.push(['RYM 歌手', links.rymArtist]);
+    if (links.metacritic) items.push(['Metacritic', links.metacritic]);
+    if (links.lastfm) items.push(['Last.fm', links.lastfm]);
+    if (links.doubanAlbum) items.push([T('豆瓣专辑', 'Douban album'), links.doubanAlbum]);
+    if (links.douban) items.push([T('豆瓣歌手', 'Douban artist'), links.douban]);
+    if (regionNow() === 'cn') items.sort(function(a, b){
+      const ra = a[0].indexOf('豆瓣') >= 0 ? 0 : 1;
+      const rb = b[0].indexOf('豆瓣') >= 0 ? 0 : 1;
+      return ra - rb;
+    });
+    const seen = {};
+    const uniq = [];
+    items.forEach(function(it){
+      if (!it || !it[1] || seen[it[1]]) return;
+      seen[it[1]] = 1;
+      uniq.push(it);
+    });
+    linksEl.innerHTML = uniq.length
+      ? uniq.map(function(it){ return '<a class="ext-link" href="' + esc(it[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(it[0]) + '</a>'; }).join('')
+      : '';
+    scoreEl.innerHTML = '<span class="score-label">' + T('评分参考', 'Ratings') + '</span><span class="score-val">' + T('查询中…', 'Checking…') + '</span>';
+    const key = d.artist + '|' + d.title;
+    if (mbCache2[key] !== undefined){ renderScore(mbCache2[key], scoreEl); return; }
+    const now = Date.now();
+    if (now - lastMBReq < 2000){ renderScore(null, scoreEl); return; }
+    lastMBReq = now;
+    fetch(U.mbArtistSearchURL(d.artist))
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(j){
+        const a = (j.artists && j.artists[0]) || null;
+        if (!a || !a.id) throw new Error('no mbid');
+        return fetch(U.mbArtistRatingsURL(a.id))
+          .then(function(r2){ if (!r2.ok) throw new Error('HTTP ' + r2.status); return r2.json(); });
+      })
+      .then(function(j2){
+        const v = j2.rating && j2.rating.value;
+        const val = v != null ? Number(v) : null;
+        mbCache2[key] = val;
+        renderScore(val, scoreEl);
+      })
+      .catch(function(){ mbCache2[key] = null; renderScore(null, scoreEl); });
+  }
+
+  function renderScore(v, el){
+    if (v == null || !isFinite(v)){
+      el.innerHTML = '<span class="score-label">' + T('评分参考', 'Ratings') + '</span><span class="score-val muted">' + T('暂无社区评分', 'No community rating') + '</span>';
+      return;
+    }
+    const stars = v > 5 ? 5 : v;
+    el.innerHTML = '<span class="score-label">' + T('MusicBrainz 评分', 'MusicBrainz') + '</span><span class="score-val">' +
+      '★ '.repeat(Math.max(1, Math.round(stars))) + ' ' + stars.toFixed(1) + ' / 5</span>';
   }
 
   /* ---------- 收藏 / 歌单操作后刷新 UI ---------- */
@@ -1807,6 +1836,82 @@
         toast(T('已创建并加入歌曲', 'Created and added'));
       });
     });
+  }
+
+  /* ---------- 歌手百科（维基百科摘要 + 百度百科 / RYM 等入口） ---------- */
+  let wikiCache = {};
+
+  /* 歌手百科入口链接，按网络区域排序（大陆：百度百科优先；国际：维基百科优先） */
+  function wikiActionLinks(links){
+    const items = [];
+    if (links.wiki) items.push([T('维基百科', 'Wikipedia'), links.wiki]);
+    if (links.baike) items.push([T('百度百科', 'Baidu Baike'), links.baike]);
+    if (links.douban) items.push([T('豆瓣', 'Douban'), links.douban]);
+    if (links.rymArtist) items.push(['RYM', links.rymArtist]);
+    if (links.lastfm) items.push(['Last.fm', links.lastfm]);
+    if (links.metacritic) items.push(['Metacritic', links.metacritic]);
+    if (regionNow() === 'cn') return [items[1], items[0], items[2], items[3], items[4], items[5]].filter(Boolean);
+    return items;
+  }
+
+  function openArtistWiki(artist){
+    if (!artist) return;
+    const name = U.cleanTerm(artist);
+    const links = U.externalLinks(name);
+    const mask = openModal(
+      '<div class="modal-title">' + esc(name) + '</div>' +
+      '<div class="wiki-body" id="wikiBody">' +
+        '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在查询维基百科…', 'Fetching Wikipedia…') + '</div></div>' +
+      '</div>' +
+      '<div class="modal-actions wiki-actions" id="wikiActions">' +
+        '<button class="btn small primary" type="button" id="wikiSearchSongs">' + T('搜索歌曲', 'Search songs') + '</button>' +
+        wikiActionLinks(links).map(function(l){
+          return '<a class="btn small ghost" href="' + esc(l[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(l[0]) + '</a>';
+        }).join('') +
+      '</div>');
+    $('#wikiSearchSongs', mask).addEventListener('click', function(){
+      mask.remove();
+      pushSearchHistory(name);
+      go('library');
+      renderLibraryPage($('#view'), 'online', name);
+    });
+    loadWikiIntro(mask, name);
+  }
+
+  function loadWikiIntro(mask, name){
+    const body = $('#wikiBody', mask);
+    const key = name.toLowerCase();
+    if (wikiCache[key] !== undefined){
+      renderWikiIntro(body, wikiCache[key]);
+      return;
+    }
+    fetch(U.wikiExtractURL(name, 300))
+      .then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(j){
+        const pages = (j.query && j.query.pages) || {};
+        let page = null;
+        Object.keys(pages).forEach(function(k){ if (!page) page = pages[k]; });
+        const out = { text: (page && page.extract) || '', thumb: (page && page.thumbnail && page.thumbnail.source) || '', pageid: page ? page.pageid : 0 };
+        wikiCache[key] = out;
+        renderWikiIntro(body, out);
+      })
+      .catch(function(){
+        wikiCache[key] = { text: '', thumb: '' };
+        renderWikiIntro(body, { text: '', thumb: '' });
+      });
+  }
+
+  function renderWikiIntro(body, info){
+    if (!info.text){
+      body.innerHTML = '<div class="list-empty">' + T('未获取到维基百科摘要（网络受限时可直接访问下方维基百科 / 百度百科条目）。', 'No Wikipedia extract (when the network is restricted, use the Wikipedia / Baidu links below).') + '</div>';
+      return;
+    }
+    body.innerHTML =
+      (info.thumb ? '<img class="wiki-thumb" src="' + esc(info.thumb) + '" alt="" loading="lazy">' : '') +
+      '<p class="wiki-text">' + esc(info.text) + '</p>';
   }
 
   /* ---------- 初始化 ---------- */

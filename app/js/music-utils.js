@@ -179,6 +179,70 @@
     return 'https://api.jamendo.com/v3.0/tracks/?' + p.join('&');
   }
 
+
+  /* Bilibili 视频搜索地址（MV，大陆用户优先，新标签打开） */
+  function biliSearchURL(artist, title){
+    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
+    return 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(q);
+  }
+
+  /* 维基百科（中文）条目摘要地址（explaintext + exintro + 缩略图，CORS 开放） */
+  function wikiExtractURL(title, thumbSize){
+    const p = [];
+    p.push('action=query');
+    p.push('prop=extracts|pageimages');
+    p.push('explaintext');
+    p.push('exintro');
+    p.push('exlimit=1');
+    if (thumbSize) p.push('piprop=thumbnail&pithumbsize=' + clampNum(normLimit(thumbSize, 300), 64, 800));
+    p.push('titles=' + encodeURIComponent(cleanTerm(title)));
+    p.push('format=json');
+    p.push('origin=*');
+    return 'https://zh.wikipedia.org/w/api.php?' + p.join('&');
+  }
+
+  /* 维基百科条目标题规范化（去掉括号注释 / 逗号后缀，替换空格，截断长度） */
+  function wikiTitleFor(name){
+    return String(name || '').replace(/\s*[（(].*?[)）]\s*$/, '').replace(/[，,、].*$/, '').trim().replace(/\s+/g, '_').slice(0, 120);
+  }
+
+  /* 百度百科条目标题规范化 */
+  function baikeTitleFor(name){
+    return String(name || '').replace(/\s*[（(].*?[)）]\s*$/, '').replace(/[，,、].*$/, '').trim().slice(0, 60);
+  }
+
+  /* MusicBrainz 艺术家搜索地址（免密钥；浏览器请求需带 UA 头，CORS 开放） */
+  function mbArtistSearchURL(name){
+    return 'https://musicbrainz.org/ws/2/artist?query=artist:%22' + encodeURIComponent(cleanTerm(name)) + '%22&fmt=json&limit=1';
+  }
+
+  /* MusicBrainz 艺术家社区评分地址（0–5，无评分时响应不含 rating 字段） */
+  function mbArtistRatingsURL(mbid){
+    return 'https://musicbrainz.org/ws/2/artist/' + encodeURIComponent(mbid) + '/ratings?fmt=json';
+  }
+
+  /* YouTube 搜索地址（MV 视频，新标签打开） */
+  function youtubeSearchURL(artist, title){
+    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  }
+
+  /* 权威网站评分 / 资料入口链接（RYM / Metacritic / Last.fm / 豆瓣 / 维基 / 百度百科） */
+  function externalLinks(artist, album){
+    const a = cleanTerm(artist);
+    const al = cleanTerm(album);
+    const links = {};
+    if (a) links.rymArtist = 'https://rateyourmusic.com/search?searchterm=' + encodeURIComponent(a) + '&searchtype=a';
+    if (al) links.rymAlbum = 'https://rateyourmusic.com/search?searchterm=' + encodeURIComponent(al) + '&searchtype=l';
+    if (a) links.metacritic = 'https://www.metacritic.com/search/' + encodeURIComponent(a);
+    if (a) links.lastfm = 'https://www.last.fm/music/' + encodeURIComponent(a.replace(/\s+/g, ' '));
+    if (a) links.douban = 'https://music.douban.com/subject_search?search_text=' + encodeURIComponent(a);
+    if (a) links.wiki = 'https://zh.wikipedia.org/wiki/' + encodeURIComponent(wikiTitleFor(a));
+    if (a) links.baike = 'https://baike.baidu.com/item/' + encodeURIComponent(baikeTitleFor(a));
+    if (al) links.doubanAlbum = 'https://music.douban.com/subject_search?search_text=' + encodeURIComponent(al);
+    return links;
+  }
+
   /* 播放统计：为 songId 累加播放次数与收听毫秒，返回新 stats 对象 */
   function bumpStats(stats, songId, incPlays, incMs){
     const prev = (stats && stats[songId]) || {};
@@ -236,6 +300,14 @@
     parseLRC: parseLRC,
     lrcIndexAt: lrcIndexAt,
     jamendoSearchURL: jamendoSearchURL,
+    wikiExtractURL: wikiExtractURL,
+    wikiTitleFor: wikiTitleFor,
+    baikeTitleFor: baikeTitleFor,
+    mbArtistSearchURL: mbArtistSearchURL,
+    mbArtistRatingsURL: mbArtistRatingsURL,
+    youtubeSearchURL: youtubeSearchURL,
+    biliSearchURL: biliSearchURL,
+    externalLinks: externalLinks,
     bumpStats: bumpStats,
     topStats: topStats,
     statsSummary: statsSummary
