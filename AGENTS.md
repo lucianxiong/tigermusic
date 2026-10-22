@@ -8,7 +8,7 @@ Windows 电脑版、Android 手机版、浏览器版必须始终是同一份最�
 
 每次修改后先跑 `npm run check`，确认全绿后再提交推送 `main`。
 
-- 发布口径：`main` 分支推送后由 GitHub Actions 自动部署网页版（GitHub Pages，自定义域名 https://tiger-music.pages.dev/；github.io 原地址自动跳转）。
+- 发布口径：`main` 分支推送后由 GitHub Actions 自动部署网页版（GitHub Pages，自定义域名 https://tigermusic.pages.dev/；github.io 原地址自动跳转）。
 - 仅发布到本项目仓库 `lucianxiong/tiger-music`；不向其他仓库、平台或服务推送，不创建远端 PR / issue。
 - 搜索引擎收录：`app/robots.txt`、`app/sitemap.xml` 随站点发布；谷歌 / 百度收录由站长平台账号维护。
 - 隐私说明：`app/PRIVACY.md`，新增在线数据源、权限或网络行为时同步更新它。
