@@ -60,3 +60,4 @@ ps-exe.txt
 
 # 根目录历史自检截图（非交付物）
 /*.png
+.browser-dump.txt
