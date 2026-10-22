@@ -2,9 +2,9 @@
 
 本地优先的在线音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，Windows / Android / 浏览器三端同源。收藏、最近播放与自定义歌单全部保存在本机，不注册账号、不收集个人信息。
 
-- 🌐 网页版（在线听歌）：https://tigermusic.duckdns.org/ （原地址 https://lucianxiong.github.io/tiger-music/ 自动跳转至该域名）
+- 🌐 网页版（在线听歌）：https://lucianxiong.github.io/tiger-music/
 - 📦 源码仓库：https://github.com/lucianxiong/tiger-music
-- 🔒 隐私说明：https://tigermusic.duckdns.org/PRIVACY.md
+- 🔒 隐私说明：https://lucianxiong.github.io/tiger-music/PRIVACY.md
 
 ## 功能
 
@@ -42,7 +42,7 @@ tools/          构建校验、语法检查、单元测试、全局变量表生�
 
 | 平台 | 获取方式 |
 |---|---|
-| 网页版 | https://tigermusic.duckdns.org/ （GitHub Pages 部署 + DuckDNS 免费域名，支持安装为 PWA） |
+| 网页版 | https://lucianxiong.github.io/tiger-music/ （GitHub Pages，支持安装为 PWA） |
 | Windows | `npm run dist:win` 本地构建安装包 / 便携版（产物在 `dist/`） |
 | Android | `npm run apk:debug` 本地构建调试包（需 JDK + Android SDK） |
 | 浏览器 | `npx http-server app -p 8787` 后访问本机地址；或 `npm start` 直接起桌面版 |
@@ -66,7 +66,7 @@ npm run apk:debug    # 打 Android 调试包（需 JDK 21 + Android SDK）
 
 ### 发布
 
-网页版由 GitHub Actions 自动部署：`npm run check` 全绿后，提交并推送 `main`，`.github/workflows/deploy.yml` 会把 `app/` 发布到 GitHub Pages，自定义域名 https://tigermusic.duckdns.org/（DuckDNS A 记录 → GitHub Pages IP 185.199.108.153）自动生效。
+网页版由 GitHub Actions 自动部署：`npm run check` 全绿后，提交并推送 `main`，`.github/workflows/deploy.yml` 会自动把 `app/` 发布到 GitHub Pages（https://lucianxiong.github.io/tiger-music/）。
 
 ## 合规说明
 
