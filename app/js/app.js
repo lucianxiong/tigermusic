@@ -1,5 +1,5 @@
 /* 蓝虎听歌 · 主应用逻辑
- * 在线音乐应用：免费曲库优先（Internet Archive / Wikimedia Commons / Jamendo 全曲）、在线试听（iTunes 30 秒预览）、
+ * 在线音乐应用：免费曲库（Internet Archive 公共领域全曲）+ 免费在线试听（iTunes 30 秒预览）、
  * 本地音乐导入；歌词（LRCLIB）、歌手百科（维基百科 / 百度百科）、评分（MusicBrainz / RYM 等）。
  * 收藏 / 最近播放 / 自定义歌单全部保存在本机 localStorage，不注册账号、不收集个人信息。
  * 依赖 js/music-utils.js（window.MusicUtils）。
@@ -40,18 +40,17 @@
     t._timer = setTimeout(function(){ t.classList.remove('on'); }, 2400);
   }
 
-  /* ---------- 偏好（主题 / 语言 / 音量 / 循环 / Jamendo） ---------- */
+  /* ---------- 偏好（主题 / 语言 / 音量 / 循环） ---------- */
   const PREF = Object.assign({
     lang: 'zh',
     theme: 'auto',
     volume: 0.8,
     repeat: 'all',
-    shuffle: false,
-    jamendoClientId: ''
+    shuffle: false
   }, store.get('pref', {}));
 
   function savePref(){
-    store.set('pref', { lang: PREF.lang, theme: PREF.theme, volume: PREF.volume, repeat: PREF.repeat, shuffle: PREF.shuffle, jamendoClientId: PREF.jamendoClientId });
+    store.set('pref', { lang: PREF.lang, theme: PREF.theme, volume: PREF.volume, repeat: PREF.repeat, shuffle: PREF.shuffle });
   }
 
   function T(zh, en){ return PREF.lang === 'en' ? en : zh; }
@@ -726,8 +725,7 @@
   function renderLibraryPage(host, initialTab, initialTerm){
     host.innerHTML =
       '<section class="page">' +
-        '<div class="page-head"><div class="page-title">' + T('曲库', 'Library') + '</div>' +
-        '<div class="ph-right">' + T('全部曲库整合 · 免费全曲优先', 'All catalogs in one search · free first') + '</div></div>' +
+        '<div class="page-head"><div class="page-title">' + T('曲库', 'Library') + '</div></div>' +
         '<div id="libBody"></div>' +
       '</section>';
     renderOnline($('#libBody', host), initialTerm || '');
@@ -781,7 +779,7 @@
 
   function renderOnline(body, initialTerm){
     lastItunesTerm = '';
-    const box = el(searchBoxHTML(T('搜索歌曲、歌手（全部曲库整合 · 免费全曲优先）', 'Search songs or artists (all catalogs · free first)'), 'onlineSearch', T('搜索', 'Search')));
+    const box = el(searchBoxHTML(T('搜索歌曲、歌手', 'Search songs or artists'), 'onlineSearch', T('搜索', 'Search')));
     const hist = el('<div id="onlineHist"></div>');
     hist.innerHTML = searchHistHTML(body);
     const list = el('<div id="onlineList"></div>');
@@ -801,20 +799,17 @@
       lastItunesTerm = t;
       list.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在搜索…', 'Searching…') + '</div></div>';
       const cn = regionNow() === 'cn';
-      const jamP = jamendoRowsFor(t);
       if (cn){
-        /* 大陆：免费全曲优先（Jamendo，需配置 Client ID），试听为 iTunes（国内可达性最好） */
+        /* 大陆：在线试听为 iTunes（免费、无需注册，国内可达性最好） */
         Promise.all([
-          jamP.catch(function(){ return []; }),
           itunesRowsFor(t).catch(function(){ return []; })
-        ]).then(function(res){ renderResults(list, [], res[0], res[1], true); });
+        ]).then(function(res){ renderResults(list, [], res[0], true); });
       } else {
-        /* 国际：Internet Archive 公共曲库全曲优先 + Jamendo + iTunes 试听 */
+        /* 国际：Internet Archive 公共曲库免费全曲优先 + iTunes 试听 */
         Promise.all([
           iaFreeRowsFor(t).catch(function(){ return []; }),
-          jamP.catch(function(){ return []; }),
           itunesRowsFor(t).catch(function(){ return []; })
-        ]).then(function(res){ renderResults(list, res[0], res[1], res[2], false); });
+        ]).then(function(res){ renderResults(list, res[0], res[1], false); });
       }
     }
 
@@ -847,40 +842,14 @@
         });
     }
 
-    function jamendoRowsFor(t){
-      if (!PREF.jamendoClientId) return Promise.resolve([]);
-      return fetch(U.jamendoSearchURL(t, 10, PREF.jamendoClientId))
-        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-        .then(function(j){
-          return ((j.results || [])).map(function(r){
-            return {
-              id: 'jm-' + r.id,
-              title: r.name || '',
-              artist: r.artist_name || '',
-              album: r.album_name || '',
-              cover: r.album_image || '',
-              src: r.audio || '',
-              duration: Number(r.duration) || 0,
-              license: r.license_short || '',
-              source: 'jamendo'
-            };
-          }).filter(function(s){ return s.src; });
-        });
-    }
-
     function srcBlock(dot, name, count, id){
       return '<div class="src-block"><div class="src-head"><span class="src-dot ' + dot + '"></span><span class="src-name">' + name + '</span><span class="src-count">' + count + '</span></div><div class="song-list" id="' + id + '"></div></div>';
     }
 
-    function renderResults(list, iaItems, jamRows, preview, cn){
+    function renderResults(list, iaItems, preview, cn){
       let html = '';
       if (!cn){
         html += srcBlock('free', T('公共曲库 · 全曲播放（Internet Archive）', 'Public domain · full (Internet Archive)'), iaItems.length, 'freeList');
-        if (jamRows.length) html += srcBlock('free', T('自由音乐 · 全曲播放（Jamendo）', 'Free music · full (Jamendo)'), jamRows.length, 'jamList');
-      } else if (jamRows.length){
-        html += srcBlock('free', T('自由音乐 · 全曲播放（Jamendo）', 'Free music · full (Jamendo)'), jamRows.length, 'jamList');
-      } else {
-        html += '<div class="hint-note hint-card">' + T('国内免费全曲：请在「我的」页配置 Jamendo Client ID 后启用（免费注册）。', 'For free full tracks in China: configure a Jamendo Client ID in the Mine page (free sign-up).') + '</div>';
       }
       html += srcBlock('preview', T('在线试听 · 30 秒预览', 'Online preview · 30s'), preview.length, 'previewList');
       list.innerHTML = html;
@@ -922,15 +891,6 @@
         }
       }
 
-      if (jamRows.length){
-        const jamBox = $('#jamList', list);
-        jamBox.innerHTML = jamRows.map(function(s, i){
-          return songRowHTML(s).replace('data-id="' + esc(s.id) + '"', 'data-id="' + esc(s.id) + '" data-idx="' + i + '"');
-        }).join('');
-        bindSongList(jamBox, jamRows);
-        bindArtistWiki(jamBox, jamRows);
-      }
-
       const prevBox = $('#previewList', list);
       if (!preview.length){
         prevBox.innerHTML = '<div class="list-empty">' + T('未找到在线试听结果，换个关键词试试', 'No previews found. Try another keyword.') + '</div>';
@@ -954,13 +914,13 @@
         });
       }
 
-      if (!cn && !iaItems.length && !jamRows.length && !preview.length){
+      if (!cn && !iaItems.length && !preview.length){
         list.innerHTML = '<div class="list-empty">' + T('没有找到相关结果，换个关键词试试', 'No results. Try another keyword.') + '</div>';
       }
     }
 
     if (initialTerm) doSearch(initialTerm);
-    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索全部曲库（免费全曲优先）', 'Type a keyword to search all catalogs (free full tracks first).') + '</div>';
+    else list.innerHTML = '<div class="list-empty">' + T('输入关键词，搜索歌曲', 'Type a keyword to search songs.') + '</div>';
   }
 
   function renderLocal(body){
@@ -1200,7 +1160,7 @@
       app: 'tiger-music',
       version: APP_VERSION,
       exportedAt: new Date().toISOString(),
-      pref: { lang: PREF.lang, theme: PREF.theme, volume: PREF.volume, repeat: PREF.repeat, shuffle: PREF.shuffle, jamendoClientId: PREF.jamendoClientId },
+      pref: { lang: PREF.lang, theme: PREF.theme, volume: PREF.volume, repeat: PREF.repeat, shuffle: PREF.shuffle },
       favorites: favorites,
       recent: recent,
       playlists: playlists,
@@ -1305,12 +1265,6 @@
             '</div>' +
             (topRows ? '<div class="rank-list">' + topRows + '</div>' : '<div class="list-empty">' + T('多听几首歌，这里会出现你的听歌排行', 'Play some songs and your chart appears here.') + '</div>') +
           '</section>' +
-          '<section class="card">' +
-            '<div class="card-h"><div class="card-t">' + T('自由音乐（Jamendo）', 'Free music (Jamendo)') + '</div></div>' +
-            '<div class="hint-note">' + T('可选：填入 Jamendo Client ID 后可在曲库「自由音乐」中搜索全曲。', 'Optional: add a Jamendo Client ID to search full tracks in Library → Free music.') + '</div>' +
-            '<div class="set-row"><input class="search-input jam-id-input" type="text" id="setJamId" value="' + esc(PREF.jamendoClientId) + '" maxlength="64" placeholder="client_id">' +
-              '<button class="btn small primary" type="button" id="setJamSave">' + T('保存', 'Save') + '</button></div>' +
-          '</section>' +
         '</div>' +
         '<section class="card about-card">' +
           '<div class="card-h"><div class="card-t">' + T('关于', 'About') + '</div></div>' +
@@ -1319,7 +1273,6 @@
           '<div class="about-line">' + T('在线数据来源：', 'Online sources: ') + '</div>' +
           '<ul class="about-list">' +
             '<li>' + T('免费曲库：Internet Archive 公共领域 / 开放授权音频，可全曲播放。', 'Free catalog: Internet Archive public-domain / openly licensed audio, full playback.') + '</li>' +
-            '<li>' + T('自由音乐：Jamendo 创作共用授权音频（需 Client ID），可全曲播放。', 'Free music: Jamendo Creative Commons audio (requires Client ID), full playback.') + '</li>' +
             '<li>' + T('在线试听：Apple iTunes Search 接口，仅提供每曲 30 秒预览，用于试听参考。', 'Online preview: Apple iTunes Search API, 30-second previews for reference only.') + '</li>' +
             '<li>' + T('歌词：LRCLIB 公共歌词库，自动显示同步歌词（如可获取）。', 'Lyrics: LRCLIB public lyrics database, synced lyrics when available.') + '</li>' +
             '<li>' + T('歌手百科：维基百科开放内容摘要；评分参考 MusicBrainz 社区评分，并收录 RYM 等权威网站评分入口。', 'Artist wiki: Wikipedia extracts; ratings from MusicBrainz community, with links to RYM and other authoritative sites.') + '</li>' +
@@ -1356,18 +1309,11 @@
       if (f) importBackup(f);
       $('#importInput', host).value = '';
     });
-    const setJamId = $('#setJamId', host);
-    $('#setJamSave', host).addEventListener('click', function(){
-      const v = U.cleanTerm(setJamId.value);
-      PREF.jamendoClientId = v;
-      savePref();
-      toast(v ? T('已保存 Jamendo Client ID', 'Jamendo Client ID saved') : T('已清除 Jamendo Client ID', 'Jamendo Client ID cleared'));
-    });
     $('#clearData', host).addEventListener('click', function(){
       openConfirmModal(T('清空本地数据', 'Clear local data'), T('将删除收藏、最近播放、自定义歌单、听歌统计、搜索历史与偏好设置。', 'This deletes favorites, history, playlists, stats, search history and preferences.'), function(){
         store.del('favorites'); store.del('recent'); store.del('playlists'); store.del('pref'); store.del('stats'); store.del('searchHistory');
         favorites = []; recent = []; playlists = []; stats = {}; searchHistory = [];
-        Object.assign(PREF, { lang: 'zh', theme: 'auto', volume: 0.8, repeat: 'all', shuffle: false, jamendoClientId: '' });
+        Object.assign(PREF, { lang: 'zh', theme: 'auto', volume: 0.8, repeat: 'all', shuffle: false });
         applyTheme();
         toast(T('已清空本地数据', 'Local data cleared'));
         go('mine');
