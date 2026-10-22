@@ -1,6 +1,6 @@
 /* 蓝虎听歌 · 主应用逻辑
  * 在线音乐应用：免费曲库（Internet Archive 公共领域全曲）+ 免费在线试听（iTunes 30 秒预览）、
- * 本地音乐导入；歌词（LRCLIB）、歌手百科（维基百科 / 百度百科）、评分（MusicBrainz / RYM 等）。
+ * 本地音乐导入；歌词（LRCLIB）、歌手百科（百科资料）、评分（MusicBrainz / RYM 等）。
  * 收藏 / 最近播放 / 自定义歌单全部保存在本机 localStorage，不注册账号、不收集个人信息。
  * 依赖 js/music-utils.js（window.MusicUtils）。
  */
@@ -1275,7 +1275,7 @@
             '<li>' + T('免费曲库：Internet Archive 公共领域 / 开放授权音频，可全曲播放。', 'Free catalog: Internet Archive public-domain / openly licensed audio, full playback.') + '</li>' +
             '<li>' + T('在线试听：Apple iTunes Search 接口，仅提供每曲 30 秒预览，用于试听参考。', 'Online preview: Apple iTunes Search API, 30-second previews for reference only.') + '</li>' +
             '<li>' + T('歌词：LRCLIB 公共歌词库，自动显示同步歌词（如可获取）。', 'Lyrics: LRCLIB public lyrics database, synced lyrics when available.') + '</li>' +
-            '<li>' + T('歌手百科：维基百科开放内容摘要；评分参考 MusicBrainz 社区评分，并收录 RYM 等权威网站评分入口。', 'Artist wiki: Wikipedia extracts; ratings from MusicBrainz community, with links to RYM and other authoritative sites.') + '</li>' +
+            '<li>' + T('歌手百科：开放百科资料（按网络区域优先百度百科 / 维基百科）；评分参考 MusicBrainz 社区评分与 RYM 等权威入口。', 'Artist wiki: open encyclopedia profiles (Baidu Baike / Wikipedia by region); ratings from MusicBrainz community with links to RYM and other authoritative sites.') + '</li>' +
             '<li>' + T('本地导入：仅在你的设备上读取所选音频文件，不上传任何内容。', 'Local import: audio files are read on your device only; nothing is uploaded.') + '</li>' +
           '</ul>' +
           '<div class="about-line">' + T('所有收藏、歌单与偏好仅保存在本机浏览器 / 应用存储中。', 'Favorites, playlists and preferences are stored only on this device.') + '</div>' +
@@ -1784,19 +1784,22 @@
     });
   }
 
-  /* ---------- 歌手百科（维基百科摘要 + 百度百科 / RYM 等入口） ---------- */
+  /* ---------- 歌手百科（百科摘要 + 权威评分入口） ---------- */
   let wikiCache = {};
 
-  /* 歌手百科入口链接，按网络区域排序（大陆：百度百科优先；国际：维基百科优先） */
+  /* 歌手百科入口链接：多方百科统一为「百科」，按网络区域选源（大陆：百度百科；国际：维基百科） */
   function wikiActionLinks(links){
     const items = [];
-    if (links.wiki) items.push([T('维基百科', 'Wikipedia'), links.wiki]);
-    if (links.baike) items.push([T('百度百科', 'Baidu Baike'), links.baike]);
+    const cn = regionNow() === 'cn';
+    if (cn){
+      if (links.baike || links.wiki) items.push([T('百科', 'Wiki'), links.baike || links.wiki]);
+    } else {
+      if (links.wiki || links.baike) items.push([T('百科', 'Wiki'), links.wiki || links.baike]);
+    }
     if (links.douban) items.push([T('豆瓣', 'Douban'), links.douban]);
     if (links.rymArtist) items.push(['RYM', links.rymArtist]);
     if (links.lastfm) items.push(['Last.fm', links.lastfm]);
     if (links.metacritic) items.push(['Metacritic', links.metacritic]);
-    if (regionNow() === 'cn') return [items[1], items[0], items[2], items[3], items[4], items[5]].filter(Boolean);
     return items;
   }
 
@@ -1807,7 +1810,7 @@
     const mask = openModal(
       '<div class="modal-title">' + esc(name) + '</div>' +
       '<div class="wiki-body" id="wikiBody">' +
-        '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在查询维基百科…', 'Fetching Wikipedia…') + '</div></div>' +
+        '<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-txt">' + T('正在查询百科…', 'Fetching wiki…') + '</div></div>' +
       '</div>' +
       '<div class="modal-actions wiki-actions" id="wikiActions">' +
         '<button class="btn small primary" type="button" id="wikiSearchSongs">' + T('搜索歌曲', 'Search songs') + '</button>' +
@@ -1852,7 +1855,7 @@
 
   function renderWikiIntro(body, info){
     if (!info.text){
-      body.innerHTML = '<div class="list-empty">' + T('未获取到维基百科摘要（网络受限时可直接访问下方维基百科 / 百度百科条目）。', 'No Wikipedia extract (when the network is restricted, use the Wikipedia / Baidu links below).') + '</div>';
+      body.innerHTML = '<div class="list-empty">' + T('未获取到百科资料（网络受限时可直接访问下方「百科」入口）。', 'No wiki profile (when the network is restricted, use the Wiki link below).') + '</div>';
       return;
     }
     body.innerHTML =

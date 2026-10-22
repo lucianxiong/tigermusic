@@ -1,3 +1,0 @@
-LIB0={'ph': '搜索歌曲、歌手', 'phRight': False, 'empty': '输入关键词，搜索歌曲'}
-SEARCH={'heads': ['在线试听 · 30 秒预览24'], 'hintCard': False, 'previewRows': 24}
-MINE={'jamCard': False, 'aboutHasJam': False}
