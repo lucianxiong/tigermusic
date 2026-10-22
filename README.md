@@ -1,4 +1,4 @@
-﻿# 蓝虎听歌（Tiger Music）
+# 蓝虎听歌（Tiger Music）
 
 在线音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，Windows / Android / 浏览器三端同源。收藏、最近播放与自定义歌单全部保存在本机，不注册账号、不收集个人信息。
 
@@ -10,18 +10,12 @@
 
 - **四大模块**：首页 · 曲库 · 歌单 · 我的
   - 首页：搜索框、热门搜索、最近播放、我的收藏
-  - 曲库：在线搜索（iTunes 曲库，30 秒试听）/ 公共曲库（Internet Archive 全曲）/ 本地文件导入
+  - 曲库：在线搜索
   - 歌单：我的收藏、最近播放、自定义歌单（新建 / 加歌 / 删除）
   - 我的：主题（跟随系统 / 深色 / 浅色）、中英双语、默认音量、本地数据管理、关于与数据来源说明
 - **播放器**：播放 / 暂停、上一首 / 下一首、进度拖动、音量与静音、列表循环 / 单曲循环 / 顺序播放、随机播放、播放队列面板
 - **全局深浅色主题**与**中英双语**，设置随本机保存
 - **本地优先**：收藏、歌单、偏好全部保存在本机存储，无账号、无统计、无上传
-
-## 在线数据来源（合规）
-
-- **在线试听**：Apple iTunes Search 公开接口，每曲仅提供 30 秒预览片段，用于试听参考。
-- **公共曲库**：Internet Archive（archive.org）公共领域 / 开放授权音频，可全曲播放；若当前网络无法访问 archive.org 会给出明确提示。
-- **本地导入**：仅在你的设备上读取所选音频文件，内容不离开本机。
 
 ## 技术栈
 
@@ -42,7 +36,7 @@ tools/          构建校验、语法检查、单元测试、全局变量表生�
 
 | 平台 | 获取方式 |
 |---|---|
-| 网页版 | https://tigermusic.pages.dev/ （GitHub Pages 部署 + DuckDNS 免费域名，支持安装为 PWA） |
+| 网页版 | https://tigermusic.pages.dev/ （GitHub Pages 部署 + Cloudflare免费域名，支持安装为 PWA） |
 | Windows | `npm run dist:win` 本地构建安装包 / 便携版（产物在 `dist/`） |
 | Android | `npm run apk:debug` 本地构建调试包（需 JDK + Android SDK） |
 | 浏览器 | `npx http-server app -p 8787` 后访问本机地址；或 `npm start` 直接起桌面版 |
@@ -66,11 +60,10 @@ npm run apk:debug    # 打 Android 调试包（需 JDK 21 + Android SDK）
 
 ### 发布
 
-网页版由 GitHub Actions 自动部署：`npm run check` 全绿后，提交并推送 `main`，`.github/workflows/deploy.yml` 会把 `app/` 发布到 GitHub Pages，自定义域名 https://tigermusic.pages.dev/（DuckDNS A 记录 → GitHub Pages IP 185.199.108.153）自动生效。
+网页版由 GitHub Actions 自动部署：`npm run check` 全绿后，提交并推送 `main`，`.github/workflows/deploy.yml` 会把 `app/` 发布到 GitHub Pages，自定义域名 https://tigermusic.pages.dev/
 
 ## 合规说明
 
-- 所有在线内容版权归各自权利人所有；试听片段仅作试听用途，公共领域曲目可全曲播放。
+- 所有在线内容版权归各自权利人所有；公共领域曲目可全曲播放。
 - 应用不收集、不上传任何个人信息或用户数据。
 - 隐私说明见 `app/PRIVACY.md`。
-- 站点面向搜索引擎收录已准备：`app/robots.txt` 与 `app/sitemap.xml` 随网页版发布；提交 Google 搜索收录与百度站长平台收录需要站长账号操作（见「发布」章节）。
