@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 
-Sitemap: https://tigermusic.duckdns.org/sitemap.xml
+Sitemap: https://tiger-music.pages.dev/sitemap.xml

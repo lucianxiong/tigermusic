@@ -1,0 +1,1 @@
+{'guid': 'fd4da89a-e780-4b4c-adc8-c96ae16941e5', 'state': 'completed', 'url': 'https://ziyuan.baidu.com/site/verifyfile?id=1432168166', 'filename': 'baidu_verify_codeva-ZUCKMCT8dg.html', 'path': 'C:\\Users\\dcw\\Downloads\\baidu_verify_codeva-ZUCKMCT8dg.html', 'bytes': 32, 'source': 'direct'}

@@ -1,0 +1,57 @@
+{
+    "Status":  2,
+    "TC":  false,
+    "RD":  true,
+    "RA":  true,
+    "AD":  false,
+    "CD":  false,
+    "Question":  [
+                     {
+                         "name":  "tigermusic.duckdns.org.",
+                         "type":  5
+                     }
+                 ],
+    "Comment":  "Suspicious or confusing response received.",
+    "extended_dns_errors":  [
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[99.79.143.35] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[15.223.21.81] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[35.183.157.249] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[3.97.58.28] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[3.97.51.116] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[15.223.106.16] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[99.79.16.64] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[15.222.19.97] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  0,
+                                    "extra_text":  "[35.182.183.211] Unexpected tigermusic.duckdns.org/a in received ANSWER at duckdns.org for tigermusic.duckdns.org/cname"
+                                },
+                                {
+                                    "info_code":  22,
+                                    "extra_text":  "At delegation duckdns.org for tigermusic.duckdns.org/cname"
+                                }
+                            ]
+}
