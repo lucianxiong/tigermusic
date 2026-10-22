@@ -1,0 +1,11 @@
+{
+  "appId": "com.lvhu.music",
+  "appName": "蓝虎听歌",
+  "webDir": "app",
+  "backgroundColor": "#070E18",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

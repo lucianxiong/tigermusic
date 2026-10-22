@@ -1,0 +1,62 @@
+node_modules/
+dist/
+android/
+ios/
+.env
+*.keystore
+*.jks
+*.log
+.DS_Store
+Thumbs.db
+
+# 开发产物
+build/logo-master.png
+tools/shots/
+tools/ghlogin.out
+tools/ghrefresh.out
+*.out.txt
+build_*.txt
+elog.txt
+glog.txt
+port.txt
+r.txt
+
+# 临时浏览器数据目录
+tools/edge-udd*/
+tools/logic-dom.html
+tools/en-init.html
+app/__en-init.html
+tools/edge-diag-profile/
+tools/audits/
+tools/audit-*.txt
+tools/lint-*.txt
+tools/check-*.txt
+tools/inspect.txt
+tools/status.txt
+tools/test-out.txt
+tools/cities-lines.txt
+tools/dupekeys.txt
+tools/gen-globals-out.txt
+tools/eslint-install*.txt
+tools/diag-zodiac.js
+tools/app-globals.json
+
+# ���������ʱ�ļ�
+.agent/
+
+# DSH 沙箱诊断报告（非交付物）
+.dsh-acl-reports/
+
+# 本地备份与自检截图（非交付物）
+app/_backup/
+app/_shots/
+
+# 本地自动化 / 临时产物（不参与发布）
+.trash/
+browser/
+exec-approvals.json
+ps-exe.txt
+.tmp-shots
+
+# 根目录历史自检截图（非交付物）
+/*.png
