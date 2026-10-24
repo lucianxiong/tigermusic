@@ -2039,7 +2039,7 @@
           '<div class="card-h"><div class="card-t">' + T('关于', 'About') + '</div></div>' +
           '<div class="about-line">蓝虎听歌 v' + APP_VERSION + '</div>' +
           '<div class="about-line">' + T('免费全曲 · 在线搜索 · 本地导入 · Windows / Android / 浏览器三端通用', 'Free full tracks · online search · local import · Windows / Android / Web') + '</div>' +
-          '<div class="about-line">' + T('v1.5 新增：主题装饰（夜间星空月亮 / 白天云朵圆日与花朵）、播放行音柱、进度条渐变、Toast 三色、快捷键（空格/左右方向键/N/P）、首页大字顶格。', 'New in v1.5: theme-aware decoration (moon+stars at night, sun+clouds+flowers by day), playing-row beat, gradient progress, tri-color toast, hotkeys (Space/Arrows/N/P), hero title flush-top.') + '</div>' +
+          
           '<div class="about-line">' + T('在线数据来源：', 'Online sources: ') + '</div>' +
           '<ul class="about-list">' +
             '<li>' + T('Internet Archive：公共领域 / 开放授权音频，可完整播放。', 'Internet Archive: public-domain / openly licensed audio, played in full.') + '</li>' +
