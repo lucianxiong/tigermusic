@@ -2039,17 +2039,6 @@
           '<div class="card-h"><div class="card-t">' + T('关于', 'About') + '</div></div>' +
           '<div class="about-line">蓝虎听歌 v' + APP_VERSION + '</div>' +
           '<div class="about-line">' + T('免费全曲 · 在线搜索 · 本地导入 · Windows / Android / 浏览器三端通用', 'Free full tracks · online search · local import · Windows / Android / Web') + '</div>' +
-          
-          '<div class="about-line">' + T('在线数据来源：', 'Online sources: ') + '</div>' +
-          '<ul class="about-list">' +
-            '<li>' + T('Internet Archive：公共领域 / 开放授权音频，可完整播放。', 'Internet Archive: public-domain / openly licensed audio, played in full.') + '</li>' +
-            '<li>' + T('Audius：独立音乐人上传的免费全曲流媒体。', 'Audius: free full-track streams uploaded by independent artists.') + '</li>' +
-            '<li>' + T('Openverse：聚合 CC 授权音频（Freesound / Jamendo 等）。', 'Openverse: CC-licensed audio from sources such as Freesound and Jamendo.') + '</li>' +
-            '<li>' + T('ccMixter：CC 授权混音与原创作品，含 FLAC 无损源。', 'ccMixter: CC-licensed remixes and originals, including FLAC lossless.') + '</li>' +
-            '<li>' + T('歌词：LRCLIB 同步歌词，lyrics.ovh 纯文本兜底。', 'Lyrics: LRCLIB synced lyrics with lyrics.ovh plain-text fallback.') + '</li>' +
-            '<li>' + T('本地导入：仅在你的设备上读取所选音频文件，不上传任何内容。', 'Local import: audio files are read on your device only; nothing is uploaded.') + '</li>' +
-          '</ul>' +
-          '<div class="about-line">' + T('所有收藏、歌单与偏好仅保存在本机浏览器 / 应用存储中。', 'Favorites, playlists and preferences are stored only on this device.') + '</div>' +
           '<div class="about-line"><a href="PRIVACY.md" target="_blank" rel="noopener noreferrer">' + T('隐私说明', 'Privacy') + '</a></div>' +
         '</section>' +
       '</section>';
