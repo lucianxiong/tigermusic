@@ -45,7 +45,7 @@ export default [
   },
   {
     /* 纯逻辑工具：浏览器 / Node 双端可用（UMD 导出守卫，供单元测试 require） */
-    files: ['app/js/music-utils.js'],
+    files: ['app/js/music-utils.js', 'app/js/audio-fx.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'script',

@@ -41,7 +41,7 @@ tools/eslint-install*.txt
 tools/diag-zodiac.js
 tools/app-globals.json
 
-# ���������ʱ�ļ�
+# 本地临时文件
 .agent/
 
 # DSH 沙箱诊断报告（非交付物）
@@ -61,3 +61,6 @@ ps-exe.txt
 # 根目录历史自检截图（非交付物）
 /*.png
 .browser-dump.txt
+
+# Agent instructions (kept locally, never published)
+AGENTS.md

@@ -1,25 +1,25 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="蓝虎听歌：本地音乐应用，支持在线搜索与试听、公共领域曲库全曲播放、本地音乐导入，收藏与歌单保存在本机。">
-<meta name="keywords" content="蓝虎听歌,音乐,在线试听,公共领域音乐,本地音乐,歌单,收藏,播放器,免费音乐">
+<meta name="description" content="蓝虎听歌：免费全曲音乐应用。在线搜索 Internet Archive、Audius、Openverse 的完整曲目，导入本地音乐，支持同步歌词、收藏与歌单，Windows / Android / 浏览器三端同源。">
+<meta name="keywords" content="蓝虎听歌,音乐,免费音乐,免费全曲,公共领域音乐,独立音乐,本地音乐,歌单,收藏,播放器,歌词">
 <meta name="author" content="蓝虎听歌">
 <link rel="canonical" href="https://tigermusic.pages.dev/">
 <meta property="og:url" content="https://tigermusic.pages.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="蓝虎听歌 Tiger Music">
-<meta property="og:title" content="蓝虎听歌 · 在线音乐应用（试听 / 公共领域全曲 / 本地导入）">
-<meta property="og:description" content="本地优先在线音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，收藏与歌单保存在本机。">
+<meta property="og:title" content="蓝虎听歌 · 免费全曲音乐应用（在线搜索 / 本地导入）">
+<meta property="og:description" content="聚合 Internet Archive、Audius、Openverse 的免费全曲，本地导入、同步歌词、收藏与歌单都保存在本机。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://tigermusic.pages.dev/assets/logo/logo-512.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="蓝虎听歌 Tiger Music · 在线音乐应用">
-<meta name="twitter:description" content="在线搜索试听、公共领域全曲、本地音乐导入，收藏与歌单保存在本机。">
+<meta name="twitter:title" content="蓝虎听歌 Tiger Music · 免费全曲音乐应用">
+<meta name="twitter:description" content="Internet Archive、Audius、Openverse 免费全曲，本地导入、同步歌词、收藏与歌单保存在本机。">
 <meta name="twitter:image" content="https://tigermusic.pages.dev/assets/logo/logo-512.png">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"蓝虎听歌","description":"本地优先的音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入、歌单与收藏。","applicationCategory":"MusicApplication","operatingSystem":"Web, Windows, Android","inLanguage":"zh-CN","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"featureList":["在线搜索试听","公共领域曲库","本地音乐导入","歌单管理","收藏","播放队列","深浅色主题"]}
+{"@context":"https://schema.org","@type":"WebApplication","name":"蓝虎听歌","description":"免费全曲音乐应用：聚合 Internet Archive、Audius、Openverse 的完整曲目，支持本地音乐导入、同步歌词、歌单与收藏。","applicationCategory":"MusicApplication","operatingSystem":"Web, Windows, Android","inLanguage":"zh-CN","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"featureList":["免费全曲搜索","Internet Archive","Audius","Openverse","本地音乐导入","同步歌词","歌单管理","收藏","播放队列","深浅色主题"]}
 </script>
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#070E18">
@@ -28,19 +28,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="蓝虎听歌">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://miaoda.feishu.cn; img-src 'self' data: blob: https:; font-src 'self' data: https://sf3-scmcdn-cn.feishucdn.com; connect-src 'self' https:; frame-src 'self' https:; media-src 'self' blob: https:; worker-src 'self' blob:; form-action 'self';">
-<title>蓝虎听歌</title>
+<title>蓝虎听歌 · 免费全曲音乐应用</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/logo/logo-64.png">
 <link rel="apple-touch-icon" href="assets/logo/logo-192.png">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans SC:wght@300;400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=1.2">
+<link rel="stylesheet" href="css/style.css?v=1.4.0">
 </head>
 <body>
 <noscript>
   <div style="max-width:720px;margin:40px auto;padding:0 20px;font-family:system-ui,sans-serif;line-height:1.8;color:#1b2a3a">
     <h1>蓝虎听歌</h1>
-    <p>蓝虎听歌是一款本地音乐应用：在线搜索与试听、公共领域曲库全曲播放、本地音乐导入，收藏与歌单保存在本机，不注册账号、不收集个人信息。</p>
-    <p>主要功能：在线搜索试听、公共领域曲库、本地音乐导入、歌单管理、收藏、播放队列、深浅色主题与中英双语。</p>
+    <p>蓝虎听歌是一款免费全曲音乐应用：在线搜索 Internet Archive、Audius、Openverse 的完整曲目，导入本地音乐，支持同步歌词、收藏与歌单，所有个人数据保存在本机，不注册账号、不收集个人信息。</p>
+    <p>主要功能：免费全曲搜索、本地音乐导入、同步歌词、歌单管理、收藏、播放队列、深浅色主题与中英双语。</p>
     <p>本应用为动态网页，需要启用 JavaScript 才能使用全部功能。请在浏览器设置中开启 JavaScript 后刷新页面。</p>
   </div>
 </noscript>
@@ -114,7 +114,9 @@
   </div>
   <div class="pb-queue" id="pbQueuePanel" hidden></div>
 </footer>
-<script defer src="js/music-utils.js?v=1.2"></script>
-<script defer src="js/app.js?v=1.2"></script>
+<script defer src="js/version.js?v=1.4.0"></script>
+<script defer src="js/music-utils.js?v=1.4.0"></script>
+<script defer src="js/audio-fx.js?v=1.4.0"></script>
+<script defer src="js/app.js?v=1.4.0"></script>
 </body>
 </html>

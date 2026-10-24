@@ -1,7 +1,7 @@
 {
   "name": "蓝虎听歌",
   "short_name": "蓝虎听歌",
-  "description": "本地音乐应用：在线搜索试听、公共领域曲库全曲播放、本地音乐导入，收藏与歌单保存在本机。",
+  "description": "免费全曲音乐应用：在线搜索 Internet Archive、Audius、Openverse，导入本地音乐，支持同步歌词、收藏与歌单，数据保存在本机。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

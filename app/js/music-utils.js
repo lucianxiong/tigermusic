@@ -1,6 +1,7 @@
 /* 蓝虎听歌 · 纯逻辑工具（无 DOM 依赖）
  * 浏览器端挂到 window.MusicUtils；Node 端通过 require 加载（供单元测试）。
- * 在线曲目来源仅两类：iTunes 搜索试听（Apple，30 秒预览）与 Internet Archive 公共领域全曲。
+ * 在线曲库仅收录可完整播放的免费来源：Internet Archive、Audius、Openverse（CC 授权）。
+ * 歌词来自 LRCLIB（同步歌词）与 lyrics.ovh（纯文本兜底）。
  */
 (function(global){
   'use strict';
@@ -59,19 +60,19 @@
     return Number.isFinite(n) ? n : def;
   }
 
-  /* iTunes Search API 查询地址（无需密钥，服务端返回 CORS: *，30 秒预览） */
-  function itunesSearchURL(term, limit){
-    return 'https://itunes.apple.com/search?media=music&entity=song&limit=' +
-      clampNum(normLimit(limit, 20), 1, 50) + '&term=' + encodeURIComponent(cleanTerm(term));
-  }
+  /* ---------- 在线曲库接口 ---------- */
 
-  /* Internet Archive 高级搜索地址（公共领域 / 开放音频集合） */
+  /* Internet Archive 高级搜索：公共领域 / 开放授权音频（音乐类集合，按下载量排序） */
   function iaSearchURL(term, rows){
-    const q = 'mediatype:audio AND (collection:opensource_audio OR collection:etree OR collection:audio_music) AND (' +
-      encodeURIComponent('title:(' + cleanTerm(term) + ')') + ')';
-    return 'https://archive.org/advancedsearch.php?q=' + q +
-      '&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=creator&fl%5B%5D=downloads&fl%5B%5D=year' +
-      '&rows=' + clampNum(normLimit(rows, 16), 1, 50) + '&page=1&output=json';
+    const t = cleanTerm(term).replace(/"/g, '');
+    const base = 'mediatype:audio AND (collection:opensource_audio OR collection:etree OR ' +
+      'collection:audio_music OR collection:78rpm OR collection:netlabels)';
+    const q = t ? base + ' AND (title:("' + t + '") OR creator:("' + t + '"))' : base;
+    const fields = ['identifier', 'title', 'creator', 'downloads', 'year', 'format', 'licenseurl'];
+    return 'https://archive.org/advancedsearch.php?q=' + encodeURIComponent(q) +
+      fields.map(function(f){ return '&fl%5B%5D=' + f; }).join('') +
+      '&rows=' + clampNum(normLimit(rows, 20), 1, 50) +
+      '&page=1&output=json&sort%5B%5D=downloads+desc';
   }
 
   /* IA 元数据接口地址 */
@@ -84,10 +85,19 @@
     return 'https://archive.org/download/' + encodeURIComponent(identifier) + '/' + encodeURIComponent(name);
   }
 
-  /* 从 IA 元数据中挑选最合适的音频文件：优先 mp3/ogg/flac/m4a，同格式取体积最大 */
-  function pickAudioFile(files){
+  /* 从 IA 元数据中挑选最合适的音频文件。
+   * quality=fast（默认）优先小体积通用格式（mp3 > ogg > m4a > aac > wav > flac）；
+   * quality=hq 优先中高码率格式（m4a > mp3 > ogg > aac > wav > flac）；
+   * quality=lossless 优先无损格式（flac > wav > m4a > aac > ogg > mp3）。
+   * 同格式取体积最大（通常码率最高）。 */
+  function pickAudioFile(files, quality){
     if (!Array.isArray(files)) return null;
-    const want = ['mp3', 'ogg', 'flac', 'm4a', 'wav', 'aac'];
+    const WANT = {
+      fast:     ['mp3', 'ogg', 'm4a', 'aac', 'wav', 'flac'],
+      hq:       ['m4a', 'mp3', 'ogg', 'aac', 'wav', 'flac'],
+      lossless: ['flac', 'wav', 'm4a', 'aac', 'ogg', 'mp3']
+    };
+    const want = WANT[quality] || WANT.fast;
     let best = null;
     files.forEach(function(f){
       if (!f || !f.name || f.name.indexOf(' ') === 0) return;
@@ -102,6 +112,199 @@
     });
     return best;
   }
+
+  /* Audius 曲库搜索（免密钥；独立音乐人作品，可全曲流式播放） */
+  function audiusSearchURL(term, limit){
+    return 'https://api.audius.co/v1/tracks/search?query=' + encodeURIComponent(cleanTerm(term)) +
+      '&app_name=TigerMusic&limit=' + clampNum(normLimit(limit, 20), 1, 100);
+  }
+
+  /* Audius 曲目流地址（搜索结果的 stream.url 缺失时兜底） */
+  function audiusStreamURL(trackId){
+    return 'https://api.audius.co/v1/tracks/' + encodeURIComponent(trackId) + '/stream?app_name=TigerMusic';
+  }
+
+  /* Openverse 音频搜索（CC 授权音频聚合：Freesound / Jamendo 等，免密钥） */
+  function openverseSearchURL(term, limit){
+    return 'https://api.openverse.org/v1/audio/?q=' + encodeURIComponent(cleanTerm(term)) +
+      '&page_size=' + clampNum(normLimit(limit, 50), 1, 50);
+  }
+
+  /* ccMixter 音频搜索（免密钥；CC 授权，含 mp3 与 flac 多格式） */
+  function ccmixterSearchURL(term, limit){
+    return 'https://ccmixter.org/api/query?f=json&search=' + encodeURIComponent(cleanTerm(term)) +
+      '&limit=' + clampNum(normLimit(limit, 15), 1, 20);
+  }
+
+  /* 从 ccMixter 记录中挑最优音频文件：quality 决定 mp3/flac 优先；
+   * files 数组每项含 download_url、file_nicname（mp3/flac 等）、file_rawsize。 */
+  function ccmixterFilesFrom(item, quality){
+    if (!item || !Array.isArray(item.files)) return null;
+    const WANT = {
+      fast:     ['mp3', 'ogg', 'm4a', 'aac', 'wav', 'flac'],
+      hq:       ['m4a', 'mp3', 'ogg', 'aac', 'wav', 'flac'],
+      lossless: ['flac', 'wav', 'm4a', 'aac', 'ogg', 'mp3']
+    };
+    const want = WANT[quality] || WANT.fast;
+    let best = null;
+    item.files.forEach(function(f){
+      if (!f || !f.download_url) return;
+      /* 格式判定优先级：download_url 尾缀 > file_name 尾缀 > file_nicname。
+       * ccMixter 的 file_nicname 对 FLAC 返回 "Altnerate File Format"（原站拼写错误），
+       * 不可作为主判定依据，仅作最后兜底。 */
+      const extOf = function(f){
+        const u = String(f.download_url || '');
+        const uExt = u.indexOf('.') >= 0 ? u.split('.').pop().toLowerCase() : '';
+        if (uExt && uExt.length <= 4) return uExt;
+        const n = String(f.file_name || '');
+        const nExt = n.indexOf('.') >= 0 ? n.split('.').pop().toLowerCase() : '';
+        if (nExt && nExt.length <= 4) return nExt;
+        const nic = String(f.file_nicname || '').toLowerCase();
+        if (nic === 'altnerate file format') return 'flac';
+        return nic;
+      };
+      const ext = extOf(f);
+      if (want.indexOf(ext) < 0) return;
+      const size = Number(f.file_rawsize) || 0;
+      if (!best || want.indexOf(ext) < want.indexOf(best.ext) ||
+          (ext === best.ext && size > best.size)){
+        best = { url: f.download_url, ext: ext, size: size, name: f.file_name || '' };
+      }
+    });
+    return best;
+  }
+  /* ---------- 歌词接口 ---------- */
+
+  /* LRCLIB 精确查询地址（无需密钥，返回 plainLyrics / syncedLyrics；duration 为秒） */
+  function lrcURL(artist, title, album, duration){
+    const p = [];
+    if (artist) p.push('artist_name=' + encodeURIComponent(cleanTerm(artist)));
+    if (title) p.push('track_name=' + encodeURIComponent(cleanTerm(title)));
+    if (album) p.push('album_name=' + encodeURIComponent(cleanTerm(album)));
+    if (duration && isFinite(Number(duration))) p.push('duration=' + Math.round(Number(duration)));
+    return 'https://lrclib.net/api/get?' + p.join('&');
+  }
+
+  /* LRCLIB 模糊搜索地址（精确查询失败或时长不一致时兜底） */
+  function lrcSearchURL(artist, title){
+    const p = [];
+    if (title) p.push('track_name=' + encodeURIComponent(cleanTerm(title)));
+    if (artist) p.push('artist_name=' + encodeURIComponent(cleanTerm(artist)));
+    return 'https://lrclib.net/api/search?' + p.join('&');
+  }
+
+  /* lyrics.ovh 纯文本歌词地址（免密钥兜底；需歌手与歌名） */
+  function lyricsOvhURL(artist, title){
+    return 'https://api.lyrics.ovh/v1/' + encodeURIComponent(cleanTerm(artist) || 'Unknown') +
+      '/' + encodeURIComponent(cleanTerm(title));
+  }
+
+  /* 清洗歌名：去掉括号注释、feat. 与版本后缀，便于歌词精确匹配 */
+  function cleanSongTitle(title){
+    return String(title || '')
+      .replace(/[（([][^)）\]]*[)）\]]/g, ' ')
+      /* feat./ft. 前必须有空格，避免把 "Swift" 里的 ft 当成合作歌手 */
+      .replace(/\s+(?:feat\.?|ft\.?|featuring)\s+.*$/i, ' ')
+      .replace(/\s*[-–—]\s*(?:remaster(?:ed)?(?:\s+\d{4})?|live|acoustic|demo|radio edit|version|deluxe|explicit|clean|bonus track|instrumental|karaoke|mono|stereo)\b.*$/i, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /* 清洗歌手名：去掉括号注释与 feat. 之后的合作歌手 */
+  function cleanArtistName(artist){
+    return String(artist || '')
+      .replace(/[（([][^)）\]]*[)）\]]/g, ' ')
+      .replace(/\s+(?:feat\.?|ft\.?|featuring)\s+.*$/i, ' ')
+      .replace(/\s*[-–—]\s*(?:topic|official|vevo)\s*$/i, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /* 标题归一：先去掉版本后缀与标点，用于判断歌词搜索结果是否真是同一首歌 */
+  function normTitleKey(s){
+    return cleanSongTitle(s).toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /* 两个标题是否指向同一首歌（归一后完全相等；不做包含匹配，避免 Hello / Hello, Goodbye 误判） */
+  function sameTitle(a, b){
+    const x = normTitleKey(a);
+    const y = normTitleKey(b);
+    return !!x && x === y;
+  }
+
+  /* 从 LRCLIB 搜索结果中挑最可信的一条：
+   * 同名优先、时长接近优先、同步歌词优先；标题不同时必须时长几乎一致，避免匹配到另一首歌。 */
+  function pickLyricCandidate(list, title, durationSec){
+    const dur = Number(durationSec) || 0;
+    let best = null;
+    let bestScore = -Infinity;
+    (Array.isArray(list) ? list : []).forEach(function(it){
+      if (!it) return;
+      const synced = !!it.syncedLyrics;
+      const plain = !!it.plainLyrics;
+      if (!synced && !plain && !it.instrumental) return;
+      const same = sameTitle(it.trackName, title);
+      const itDur = Number(it.duration) || 0;
+      const diff = dur > 0 && itDur > 0 ? Math.abs(itDur - dur) : 999;
+      if (dur > 0 && itDur > 0){
+        if (same && diff > 15) return;
+        if (!same && diff > 3) return;
+      }
+      if (!same && !(dur > 0 && itDur > 0)) return;
+      const score = (same ? 100 : 0) + (synced ? 30 : 0) + (it.instrumental ? 15 : 0) - Math.min(diff, 120) / 10;
+      if (score > bestScore){ bestScore = score; best = it; }
+    });
+    return best;
+  }
+
+  /* 解析 LRC 歌词文本 → [{ t: 秒, line: 文本 }]（按时间升序）
+   * 支持：一行多个时间戳、[mm:ss]、[mm:ss.xx]、[mm:ss:xxx]、[offset:±毫秒]。
+   * 带同步时间戳的行按时间排序；无时间戳的元数据行（[ar:]/[ti:] 等）忽略。 */
+  function parseLRC(text){
+    const out = [];
+    if (!text) return out;
+    let offset = 0;
+    const tagRe = /^\[(\d{1,3}):(\d{1,2})(?:([.:])(\d{1,3}))?\]/;
+    String(text).split(/\r?\n/).forEach(function(raw){
+      let line = String(raw).trim();
+      if (!line) return;
+      const off = line.match(/^\[offset:\s*([+-]?\d+)\s*\]$/i);
+      if (off){ offset = Number(off[1]) / 1000; return; }
+      const tags = [];
+      let m;
+      while ((m = tagRe.exec(line))){
+        const digits = m[4] == null ? 0 : m[4].length;
+        const frac = m[4] == null ? 0 : (m[3] === ':' ? Number(m[4]) / 1000 : Number(m[4]) / Math.pow(10, digits));
+        tags.push(Number(m[1]) * 60 + Number(m[2]) + frac);
+        line = line.slice(m[0].length);
+      }
+      if (!tags.length) return;
+      /* 去掉增强型逐字时间戳 <mm:ss.xx>，只保留歌词文本 */
+      const rest = line.replace(/<\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?>/g, '').trim();
+      tags.forEach(function(t){
+        out.push({ t: Math.max(0, Math.round((t + offset) * 1000) / 1000), line: rest });
+      });
+    });
+    out.sort(function(a, b){ return a.t - b.t; });
+    return out;
+  }
+
+  /* 取当前播放位置对应的歌词行下标（二分查找；第一行之前返回 -1，避免前奏就高亮第一句） */
+  function lrcIndexAt(lines, t){
+    if (!lines || !lines.length) return -1;
+    if (t < lines[0].t) return -1;
+    let lo = 0, hi = lines.length - 1, idx = 0;
+    while (lo <= hi){
+      const mid = (lo + hi) >> 1;
+      if (lines[mid].t <= t){ idx = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    return idx;
+  }
+
+  /* ---------- 本地导入 ---------- */
 
   /* 本地文件名解析：优先 "歌手 - 歌名"，否则整串当歌名 */
   function parseLocalName(name){
@@ -124,124 +327,7 @@
     return (h >>> 0).toString(36);
   }
 
-  /* 深拷贝（JSON 安全对象） */
-  function deepClone(o){
-    return o == null ? o : JSON.parse(JSON.stringify(o));
-  }
-
-  /* LRCLIB 公共歌词接口地址（无需密钥，返回 plainLyrics / syncedLyrics） */
-  function lrcURL(artist, title, album, duration){
-    const p = [];
-    if (artist) p.push('artist_name=' + encodeURIComponent(cleanTerm(artist)));
-    if (title) p.push('track_name=' + encodeURIComponent(cleanTerm(title)));
-    if (album) p.push('album_name=' + encodeURIComponent(cleanTerm(album)));
-    if (duration && isFinite(Number(duration))) p.push('duration=' + Math.round(Number(duration)));
-    return 'https://lrclib.net/api/get?' + p.join('&');
-  }
-
-  /* 解析 LRC 歌词文本 → [{ t: 秒, line: 文本 }]（按时间升序）
-   * 时间戳支持 [mm:ss.xx]（百分秒）与 [mm:ss:xxx]（毫秒）两种写法。 */
-  function parseLRC(text){
-    const out = [];
-    if (!text) return out;
-    String(text).split(/\r?\n/).forEach(function(raw){
-      const line = String(raw).trim();
-      if (!line) return;
-      const m = line.match(/^\[(\d{1,3}):(\d{1,2})([.:](\d{1,3}))?\]\s*(.*)$/);
-      if (!m) return;
-      const frac = m[4] == null ? 0 : (m[3] === ':' ? Number(m[4]) / 1000 : Number(m[4]) / Math.pow(10, m[4].length));
-      const t = Number(m[1]) * 60 + Number(m[2]) + frac;
-      if (m[5] !== undefined) out.push({ t: t, line: m[5] });
-    });
-    out.sort(function(a, b){ return a.t - b.t; });
-    return out;
-  }
-
-  /* 取任意文本中第 i 个 LRC 行的播放位置（无则返回 0） */
-  function lrcIndexAt(lines, t){
-    if (!lines || !lines.length) return 0;
-    let idx = 0;
-    for (let i = 0; i < lines.length; i++){
-      if (lines[i].t <= t) idx = i; else break;
-    }
-    return idx;
-  }
-
-  /* Jamendo 曲目搜索地址（需 client_id；返回直链音频与授权信息） */
-  function jamendoSearchURL(term, limit, clientId){
-    const p = [];
-    p.push('client_id=' + encodeURIComponent(cleanTerm(clientId)));
-    p.push('format=json');
-    p.push('limit=' + clampNum(normLimit(limit, 16), 1, 50));
-    p.push('search=' + encodeURIComponent(cleanTerm(term)));
-    p.push('include=musicinfo');
-    p.push('audioformat=mp32');
-    return 'https://api.jamendo.com/v3.0/tracks/?' + p.join('&');
-  }
-
-
-  /* Bilibili 视频搜索地址（MV，大陆用户优先，新标签打开） */
-  function biliSearchURL(artist, title){
-    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
-    return 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(q);
-  }
-
-  /* 维基百科（中文）条目摘要地址（explaintext + exintro + 缩略图，CORS 开放） */
-  function wikiExtractURL(title, thumbSize){
-    const p = [];
-    p.push('action=query');
-    p.push('prop=extracts|pageimages');
-    p.push('explaintext');
-    p.push('exintro');
-    p.push('exlimit=1');
-    if (thumbSize) p.push('piprop=thumbnail&pithumbsize=' + clampNum(normLimit(thumbSize, 300), 64, 800));
-    p.push('titles=' + encodeURIComponent(cleanTerm(title)));
-    p.push('format=json');
-    p.push('origin=*');
-    return 'https://zh.wikipedia.org/w/api.php?' + p.join('&');
-  }
-
-  /* 维基百科条目标题规范化（去掉括号注释 / 逗号后缀，替换空格，截断长度） */
-  function wikiTitleFor(name){
-    return String(name || '').replace(/\s*[（(].*?[)）]\s*$/, '').replace(/[，,、].*$/, '').trim().replace(/\s+/g, '_').slice(0, 120);
-  }
-
-  /* 百度百科条目标题规范化 */
-  function baikeTitleFor(name){
-    return String(name || '').replace(/\s*[（(].*?[)）]\s*$/, '').replace(/[，,、].*$/, '').trim().slice(0, 60);
-  }
-
-  /* MusicBrainz 艺术家搜索地址（免密钥；浏览器请求需带 UA 头，CORS 开放） */
-  function mbArtistSearchURL(name){
-    return 'https://musicbrainz.org/ws/2/artist?query=artist:%22' + encodeURIComponent(cleanTerm(name)) + '%22&fmt=json&limit=1';
-  }
-
-  /* MusicBrainz 艺术家社区评分地址（0–5，无评分时响应不含 rating 字段） */
-  function mbArtistRatingsURL(mbid){
-    return 'https://musicbrainz.org/ws/2/artist/' + encodeURIComponent(mbid) + '/ratings?fmt=json';
-  }
-
-  /* YouTube 搜索地址（MV 视频，新标签打开） */
-  function youtubeSearchURL(artist, title){
-    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
-    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
-  }
-
-  /* 权威网站评分 / 资料入口链接（RYM / Metacritic / Last.fm / 豆瓣 / 维基 / 百度百科） */
-  function externalLinks(artist, album){
-    const a = cleanTerm(artist);
-    const al = cleanTerm(album);
-    const links = {};
-    if (a) links.rymArtist = 'https://rateyourmusic.com/search?searchterm=' + encodeURIComponent(a) + '&searchtype=a';
-    if (al) links.rymAlbum = 'https://rateyourmusic.com/search?searchterm=' + encodeURIComponent(al) + '&searchtype=l';
-    if (a) links.metacritic = 'https://www.metacritic.com/search/' + encodeURIComponent(a);
-    if (a) links.lastfm = 'https://www.last.fm/music/' + encodeURIComponent(a.replace(/\s+/g, ' '));
-    if (a) links.douban = 'https://music.douban.com/subject_search?search_text=' + encodeURIComponent(a);
-    if (a) links.wiki = 'https://zh.wikipedia.org/wiki/' + encodeURIComponent(wikiTitleFor(a));
-    if (a) links.baike = 'https://baike.baidu.com/item/' + encodeURIComponent(baikeTitleFor(a));
-    if (al) links.doubanAlbum = 'https://music.douban.com/subject_search?search_text=' + encodeURIComponent(al);
-    return links;
-  }
+  /* ---------- 播放统计 ---------- */
 
   /* 播放统计：为 songId 累加播放次数与收听毫秒，返回新 stats 对象 */
   function bumpStats(stats, songId, incPlays, incMs){
@@ -281,6 +367,17 @@
     return { plays: plays, ms: ms, songs: songs };
   }
 
+  /* MV 视频入口（新标签打开，搜索页链接，不嵌入第三方播放器） */
+  function youtubeSearchURL(artist, title){
+    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  }
+
+  function biliSearchURL(artist, title){
+    const q = [artist, title, 'MV'].filter(Boolean).join(' ');
+    return 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(q);
+  }
+
   const MusicUtils = {
     clampNum: clampNum,
     fmtTime: fmtTime,
@@ -288,29 +385,32 @@
     shuffleCopy: shuffleCopy,
     dedupeSongs: dedupeSongs,
     cleanTerm: cleanTerm,
-    itunesSearchURL: itunesSearchURL,
     iaSearchURL: iaSearchURL,
     iaMetaURL: iaMetaURL,
     iaFileURL: iaFileURL,
     pickAudioFile: pickAudioFile,
-    parseLocalName: parseLocalName,
-    stableId: stableId,
-    deepClone: deepClone,
+    audiusSearchURL: audiusSearchURL,
+    audiusStreamURL: audiusStreamURL,
+    openverseSearchURL: openverseSearchURL,
+    ccmixterSearchURL: ccmixterSearchURL,
+    ccmixterFilesFrom: ccmixterFilesFrom,
     lrcURL: lrcURL,
+    lrcSearchURL: lrcSearchURL,
+    lyricsOvhURL: lyricsOvhURL,
+    cleanSongTitle: cleanSongTitle,
+    cleanArtistName: cleanArtistName,
+    normTitleKey: normTitleKey,
+    sameTitle: sameTitle,
+    pickLyricCandidate: pickLyricCandidate,
     parseLRC: parseLRC,
     lrcIndexAt: lrcIndexAt,
-    jamendoSearchURL: jamendoSearchURL,
-    wikiExtractURL: wikiExtractURL,
-    wikiTitleFor: wikiTitleFor,
-    baikeTitleFor: baikeTitleFor,
-    mbArtistSearchURL: mbArtistSearchURL,
-    mbArtistRatingsURL: mbArtistRatingsURL,
-    youtubeSearchURL: youtubeSearchURL,
-    biliSearchURL: biliSearchURL,
-    externalLinks: externalLinks,
+    parseLocalName: parseLocalName,
+    stableId: stableId,
     bumpStats: bumpStats,
     topStats: topStats,
-    statsSummary: statsSummary
+    statsSummary: statsSummary,
+    youtubeSearchURL: youtubeSearchURL,
+    biliSearchURL: biliSearchURL
   };
   if (typeof module !== 'undefined' && module.exports){
     module.exports = MusicUtils;

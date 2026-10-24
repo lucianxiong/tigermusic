@@ -1,11 +1,21 @@
 /* 蓝虎听歌 Service Worker —— 离线可用（界面外壳缓存；在线音乐播放仍需网络） */
-const CACHE = 'bluetiger-music-v1.0';
+const CACHE = 'bluetiger-music-v1.4.0';
 const OFFLINE_URL = './index.html';
+const PRECACHE = [
+  OFFLINE_URL,
+  './manifest.webmanifest',
+  './css/style.css',
+  './js/version.js',
+  './js/music-utils.js',
+  './js/audio-fx.js',
+  './js/app.js',
+  './assets/logo/logo-64.png'
+];
 
 self.addEventListener('install', function(event){
   event.waitUntil(
     caches.open(CACHE).then(function(cache){
-      return cache.addAll([OFFLINE_URL, './manifest.webmanifest']);
+      return cache.addAll(PRECACHE);
     }).then(function(){ return self.skipWaiting(); })
   );
 });
