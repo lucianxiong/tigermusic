@@ -2,8 +2,10 @@
 
 在线音乐应用：在线搜索试听、公共曲库全曲播放、本地音乐导入、同步歌词、收藏与歌单。
 
-* 网页版（在线听歌）：https://lucianxiong.github.io/tigermusic
+* ?? 网页版（Cloudflare Pages）：https://tigermusic.pages.dev/
+  * 备选地址（GitHub Pages）：https://lucianxiong.github.io/tigermusic
 * 源码仓库：https://github.com/lucianxiong/tigermusic
+
 ## 下载客户端
 
 | 平台 | 版本 | 下载 |
