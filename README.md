@@ -9,9 +9,9 @@
 ## 下载客户端
 | 平台 | 版本 | 下载 |
 | :--- | :--- | :--- |
-| Windows | 安装版 | [Tiger-Music-v1.5.0-setup.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/Tiger-Music-v1.5.0-setup.exe) |
-| Windows | 便携版 | [Tiger-Music-v1.5.0-portable.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/Tiger-Music-v1.5.0-portable.exe) |
-| Android | Debug APK | [tigermusic-debug.apk](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/tigermusic-debug.apk) |
+| Windows | 安装版 | [Tiger-Music-v1.5.0-setup.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.2/Tiger-Music-v1.5.2-setup.exe) |
+| Windows | 便携版 | [Tiger-Music-v1.5.0-portable.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.2/Tiger-Music-v1.5.2-portable.exe) |
+| Android | Debug APK | [tigermusic-debug.apk](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.2/tigermusic-debug.apk) |
 
 > 历史版本及更新日志请查看 [GitHub Releases](https://github.com/lucianxiong/tigermusic/releases)。
 
