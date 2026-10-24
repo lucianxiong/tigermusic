@@ -1130,9 +1130,9 @@
         '<div class="card about-card" style="text-align:center;margin-top:16px;">' +
           '<div class="card-t" style="margin-bottom:12px;">' + T('下载客户端', 'Download apps') + '</div>' +
           '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
-            '<a class="btn primary" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/Tiger-Music-v1.0.0-setup.exe" target="_blank" rel="noopener noreferrer">' + T('Windows 安装版', 'Windows Setup') + '</a>' +
-            '<a class="btn ghost" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/Tiger-Music-v1.0.0-portable.exe" target="_blank" rel="noopener noreferrer">' + T('Windows 便携版', 'Portable') + '</a>' +
-            '<a class="btn ghost" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/tigermusic-debug.apk" target="_blank" rel="noopener noreferrer">' + T('Android APK', 'Android APK') + '</a>' +
+            '<a class="btn primary" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.1/Tiger-Music-v1.0.1-setup.exe" target="_blank" rel="noopener noreferrer">' + T('Windows 安装版', 'Windows Setup') + '</a>' +
+            '<a class="btn ghost" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.1/Tiger-Music-v1.0.1-portable.exe" target="_blank" rel="noopener noreferrer">' + T('Windows 便携版', 'Portable') + '</a>' +
+            '<a class="btn ghost" href="https://github.com/lucianxiong/tigermusic/releases/download/v1.0.1/tigermusic-debug.apk" target="_blank" rel="noopener noreferrer">' + T('Android APK', 'Android APK') + '</a>' +
           '</div>' +
         '</div>' +
       '</section>';
