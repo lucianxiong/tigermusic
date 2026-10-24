@@ -64,8 +64,12 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Sync Capacitor Android
-        run: npx cap sync android
+      - name: Add and Sync Capacitor Android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
 
       - name: Build Android APK (Debug)
         run: |
