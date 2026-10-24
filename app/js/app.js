@@ -25,11 +25,11 @@
     del: function(k){ try { localStorage.removeItem(STORE_PREFIX + k); } catch(e){} }
   };
 
-  function toast(msg){
+  function toast(msg, type){
     let t = $('.rt-toast');
     if (!t){
       t = document.createElement('div');
-      t.className = 'rt-toast';
+      t.className = 'rt-toast' + (type ? ' ' + type : '');
       t.setAttribute('role', 'status');
       t.setAttribute('aria-live', 'polite');
       document.body.appendChild(t);
@@ -225,6 +225,7 @@
     $('#pbMute').classList.toggle('on', audio.muted || PREF.volume === 0);
     renderQueuePanel();
     syncMiniPlayer();
+    syncPlayingRows();
   }
 
   function playQueue(songs, index){
@@ -819,6 +820,7 @@
       const ratio = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
       $('#pbCur').textContent = U.fmtTime(audio.currentTime);
       $('#pbSeek').value = Math.round(ratio * 1000);
+      try { document.documentElement.style.setProperty('--seek-fill', Math.round(ratio*100)+'%'); } catch(e){}
       $('#pbDur').textContent = U.fmtTime(audio.duration);
     } else if (song){
       $('#pbDur').textContent = song.duration ? U.fmtMS(song.duration) : '--:--';
@@ -851,6 +853,20 @@
   }
 
   /* 播放元素事件：baseAudio 与 fxEl 共用（按当前播放元素触发） */
+  function bindHotkeys(){
+    if (window._hotkeysBound) return;
+    window._hotkeysBound = true;
+    document.addEventListener('keydown', function(e){
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.code === 'Space'){ e.preventDefault(); if (qIndex >= 0) togglePlay(); return; }
+      if (e.code === 'ArrowLeft'){ e.preventDefault(); if (qIndex >= 0 && isFinite(audio.currentTime)) audio.currentTime = Math.max(0, audio.currentTime - 5); return; }
+      if (e.code === 'ArrowRight'){ e.preventDefault(); if (qIndex >= 0 && isFinite(audio.currentTime)) audio.currentTime = Math.min(audio.duration || 1e9, audio.currentTime + 5); return; }
+      if (e.code === 'KeyN'){ e.preventDefault(); if (qIndex >= 0) next(false); return; }
+      if (e.code === 'KeyP'){ e.preventDefault(); if (qIndex >= 0) prev(); return; }
+    });
+  }
+
   function bindPlayerEvents(el){
     el.addEventListener('timeupdate', function(){
       updateProgressUI();
@@ -915,6 +931,11 @@
   /* 启动时按上次偏好恢复音效状态（静默；无歌曲时不触发重载） */
   applyEq(true);
 
+  function syncPlayingRows(){
+    const curId = qIndex >= 0 && queue[qIndex] ? String(queue[qIndex].id) : '';
+    ('.song-row').forEach(function(row){ row.classList.toggle('playing', !!curId && row.dataset.id === curId); });
+  }
+
   /* ---------- 渲染：歌曲行 ---------- */
   function songRowHTML(song, opts){
     opts = opts || {};
@@ -955,7 +976,7 @@
       const actBtn = e.target.closest('[data-act]');
       if (actBtn){
         const act = actBtn.dataset.act;
-        if (act === 'fav'){ toggleFav(song); return; }
+        if (act === 'fav'){ actBtn.classList.add('pop'); setTimeout(function(){ actBtn.classList.remove('pop'); }, 400); toggleFav(song); return; }
         if (act === 'add'){ openPlaylistPicker(song); return; }
         if (act === 'remove'){
           if (onRemove) onRemove(song, idx);
@@ -1955,6 +1976,7 @@
           '<div class="card-h"><div class="card-t">' + T('关于', 'About') + '</div></div>' +
           '<div class="about-line">蓝虎听歌 v' + APP_VERSION + '</div>' +
           '<div class="about-line">' + T('免费全曲 · 在线搜索 · 本地导入 · Windows / Android / 浏览器三端通用', 'Free full tracks · online search · local import · Windows / Android / Web') + '</div>' +
+          '<div class="about-line">' + T('v1.5 新增：主题装饰（夜间星空月亮 / 白天云朵圆日与花朵）、播放行音柱、进度条渐变、Toast 三色、快捷键（空格/左右方向键/N/P）、首页大字顶格。', 'New in v1.5: theme-aware decoration (moon+stars at night, sun+clouds+flowers by day), playing-row beat, gradient progress, tri-color toast, hotkeys (Space/Arrows/N/P), hero title flush-top.') + '</div>' +
           '<div class="about-line">' + T('在线数据来源：', 'Online sources: ') + '</div>' +
           '<ul class="about-list">' +
             '<li>' + T('Internet Archive：公共领域 / 开放授权音频，可完整播放。', 'Internet Archive: public-domain / openly licensed audio, played in full.') + '</li>' +
@@ -2534,6 +2556,8 @@
 
   /* ---------- 初始化 ---------- */
   function init(){
+    bindHotkeys();
+    document.addEventListener('error', function(e){ var t=e.target; if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('song-cover')&&String(t.src||'').indexOf('logo-64')<0){ t.src='assets/logo/logo-64.png'; } }, true);
     applyTheme();
     paintLangButton();
     applyStaticI18n();

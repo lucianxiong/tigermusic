@@ -602,3 +602,195 @@ svg{ display:block; }
   background:var(--accent, #2f6bff); color:#fff; font-size:14px; font-weight:600; text-decoration:none; border:0; cursor:pointer; }
 .mp-mv-btn svg{ flex:none; }
 
+/* ============ v1.5 UI Enhancements (A+B+C+D+E) ============ */
+
+/* A1 · 进度条渐变拖尾（--seek-fill 由 JS 实时写入） */
+.pb-range{ background:linear-gradient(to right, var(--accent) 0%, var(--accent-2) var(--seek-fill,0%), var(--bg-3) var(--seek-fill,0%), var(--bg-3) 100%) !important; }
+.pb-range::-webkit-slider-thumb{ transition:transform .15s ease; }
+.pb-range:active::-webkit-slider-thumb{ transform:scale(1.2); }
+
+/* A2 · 卡片悬停微倾斜 */
+.stat-card:hover{ transform:translateY(-3px) rotate(-.4deg); }
+.playlist-card:hover{ transform:translateY(-3px) rotate(.4deg); }
+
+/* A4 · Hero 星空流光（纯CSS，零依赖） */
+.hero::before{ content:''; position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.55;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(127,209,255,.9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 50%, rgba(255,255,255,.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 40% 72%, rgba(127,209,255,.7), transparent 60%),
+    radial-gradient(2px 2px at 85% 22%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(1px 1px at 55% 85%, rgba(127,209,255,.8), transparent 60%);
+  animation:heroStars 5s ease-in-out infinite alternate;
+}
+.hero > *{ position:relative; z-index:1; }
+@keyframes heroStars{ from{opacity:.35} to{opacity:.85} }
+[data-theme="light"] .hero::before{ opacity:.12 }
+
+/* B1 · 正在播放行音柱动画 */
+.song-row.playing .song-title{ color:var(--accent-2); }
+.song-row.playing .song-cover{ box-shadow:0 0 0 2px var(--accent), 0 0 12px rgba(77,163,255,.4); }
+.song-row.playing .song-artist::before{ content:'\266B'; display:inline-block; margin-right:5px; color:var(--accent); animation:eqBounce .8s ease-in-out infinite; }
+@keyframes eqBounce{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+/* B2 · 收藏 heart pop */
+@keyframes heartPop{ 0%{transform:scale(1)} 45%{transform:scale(1.45)} 100%{transform:scale(1)} }
+.icon-btn.pop svg{ animation:heartPop .35s cubic-bezier(.34,1.56,.64,1); }
+
+/* B3 · Toast 三色态 */
+.rt-toast.ok{ background:color-mix(in srgb, var(--ok) 22%, var(--bg-3)); border-color:var(--ok); }
+.rt-toast.err{ background:color-mix(in srgb, var(--danger) 22%, var(--bg-3)); border-color:var(--danger); }
+.rt-toast.warn{ background:color-mix(in srgb, #F5A524 22%, var(--bg-3)); border-color:#F5A524; }
+
+/* B4 · 播放按钮弹性按压 */
+.pb-play{ transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .15s, box-shadow .18s; }
+.pb-play:active{ transform:scale(.9); }
+
+/* D1 · 主题切换平滑过渡 */
+body, .topbar, .playerbar, .card, .hero, .stat-card, .playlist-card, .tb-btn, .tnav-btn, .chip{
+  transition:background-color .3s ease, border-color .3s ease, color .3s ease;
+}
+
+/* D2 · 图片等比防抖 */
+.song-cover{ aspect-ratio:1 / 1; }
+
+/* E1 · 统一 focus-visible（补齐缺失组件） */
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.icon-btn:focus-visible, .pb-btn:focus-visible, .chip:focus-visible{ border-radius:8px; }
+
+/* E2 · 快捷键标签 */
+.kbd{ display:inline-block; padding:1px 6px; border:1px solid var(--line-strong); border-radius:5px; font-size:11px; color:var(--text-3); font-family:ui-monospace,monospace; background:var(--bg-3); }
+
+/* C1 · 窄屏底栏精简，让进度条更宽 */
+@media (max-width:480px){
+  .pb-tools{ gap:0; }
+  .pb-vol{ display:none; }
+  .pb-repeat-txt{ display:none; }
+}
+
+/* v1.5.1 starfield boost */
+.hero::before{ content:''; position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.9;
+  background-image:
+    radial-gradient(2.5px 2.5px at 12% 25%, rgba(180,225,255,.95), transparent 65%),
+    radial-gradient(2px 2px at 25% 62%, rgba(255,255,255,.85), transparent 65%),
+    radial-gradient(3px 3px at 38% 18%, rgba(127,209,255,.95), transparent 60%),
+    radial-gradient(2px 2px at 46% 78%, rgba(255,255,255,.8), transparent 65%),
+    radial-gradient(2.5px 2.5px at 58% 42%, rgba(180,225,255,.9), transparent 60%),
+    radial-gradient(3px 3px at 68% 15%, rgba(255,255,255,.9), transparent 60%),
+    radial-gradient(2px 2px at 74% 68%, rgba(127,209,255,.85), transparent 65%),
+    radial-gradient(2.5px 2.5px at 82% 35%, rgba(180,225,255,.95), transparent 60%),
+    radial-gradient(2px 2px at 88% 82%, rgba(255,255,255,.8), transparent 65%),
+    radial-gradient(2.5px 2.5px at 94% 52%, rgba(127,209,255,.9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 8% 78%, rgba(255,255,255,.7), transparent 65%),
+    radial-gradient(2px 2px at 32% 40%, rgba(127,209,255,.75), transparent 65%),
+    radial-gradient(1.5px 1.5px at 62% 88%, rgba(180,225,255,.75), transparent 65%),
+    radial-gradient(1.5px 1.5px at 18% 5%, rgba(255,255,255,.65), transparent 65%),
+    radial-gradient(2px 2px at 76% 92%, rgba(127,209,255,.7), transparent 65%);
+  animation:heroStars 7s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 3px rgba(127,209,255,.4));
+}
+.hero > *{ position:relative; z-index:1; }
+@keyframes heroStars{ from{opacity:.6; transform:scale(1)} to{opacity:1; transform:scale(1.01)} }
+[data-theme="light"] .hero::before{ opacity:.25; filter:drop-shadow(0 0 2px rgba(46,124,246,.25)) }
+
+/* ============ v1.12 主题装饰层（深色：月亮+夜花 / 浅色：太阳+花） ============ */
+/* 使用 index.html 中专职的 <div class="theme-deco"> 承载装饰，避免强抢 z-index */
+.theme-deco {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    transition: opacity .35s ease;
+}
+.layout { position: relative; z-index: 1; }
+
+/* ---------- 夜间：右上月牙 + 三朵冷调夜花（左粉/右蓝/底紫） ---------- */
+[data-theme="dark"] .theme-deco {
+    background-image:
+        /* 月亮 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='36' fill='%23FFE082' opacity='0.95'/%3E%3C/svg%3E"),
+        /* 夜·粉花（暗夜里的粉玫瑰） */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23F48FB1' opacity='0.45'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23FFE082' opacity='0.8'/%3E%3C/svg%3E"),
+        /* 夜·蓝花（冷月蓝） */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23A8D8EA' opacity='0.45'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23E0F7FF' opacity='0.9'/%3E%3C/svg%3E"),
+        /* 夜·紫花（夜空薰衣草） */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23C8B6E2' opacity='0.45'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23FFFFFF' opacity='0.85'/%3E%3C/svg%3E");
+    background-position:
+        right 55px top 105px,
+        left 4% top 24%,
+        right 4% top 72%,
+        left 45% bottom 4%;
+    background-size:
+        105px 105px,
+        150px 150px,
+        125px 125px,
+        115px 115px;
+    animation: moonPulse 6s ease-in-out infinite alternate;
+}
+@keyframes moonPulse {
+    from { filter: drop-shadow(0 0 8px rgba(255,224,130,0.3)); }
+    to   { filter: drop-shadow(0 0 20px rgba(255,224,130,0.7)); }
+}
+
+/* ---------- 白天：右上太阳 + 三朵暖调花 ---------- */
+[data-theme="light"] .theme-deco {
+    background-image:
+        /* 太阳 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='36' fill='%23FFB347' opacity='0.95'/%3E%3C/svg%3E"),
+        /* 粉花 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FF9EB5' opacity='0.8'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23FFE082'/%3E%3C/svg%3E"),
+        /* 蓝花 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23A8D8EA' opacity='0.8'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23FFFFFF'/%3E%3C/svg%3E"),
+        /* 黄花 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FBE6A2' opacity='0.9'%3E%3Ccircle cx='50' cy='24' r='16'/%3E%3Ccircle cx='74' cy='44' r='16'/%3E%3Ccircle cx='64' cy='72' r='16'/%3E%3Ccircle cx='36' cy='72' r='16'/%3E%3Ccircle cx='26' cy='44' r='16'/%3E%3C/g%3E%3Ccircle cx='50' cy='48' r='11' fill='%23FF9EB5'/%3E%3C/svg%3E");
+    background-position:
+        right 55px top 105px,
+        left 4% top 24%,
+        right 4% top 72%,
+        left 45% bottom 4%;
+    background-size:
+        105px 105px,
+        150px 150px,
+        125px 125px,
+        115px 115px;
+    animation: sunGlow 8s ease-in-out infinite alternate;
+}
+@keyframes sunGlow {
+    from { filter: drop-shadow(0 0 6px rgba(255,179,71,0.25)); }
+    to   { filter: drop-shadow(0 0 16px rgba(255,179,71,0.6)); }
+}
+
+/* ============ v1.13 浅色云朵 + 大字顶格 ============ */
+/* 浅色模式：用云朵替换夜空星星 */
+[data-theme="light"] .hero::before {
+    background-image:
+        /* 主云朵 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M20 35 a12 12 0 0 1 0-24 a18 18 0 0 1 35 0 a14 14 0 0 1 25 14 a10 10 0 0 1 0 10 z' fill='%23FFFFFF' opacity='0.85'/%3E%3C/svg%3E"),
+        /* 小云朵 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M20 35 a12 12 0 0 1 0-24 a18 18 0 0 1 35 0 a14 14 0 0 1 25 14 a10 10 0 0 1 0 10 z' fill='%23E0F0FF' opacity='0.8'/%3E%3C/svg%3E"),
+        /* 远云朵 */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M20 35 a12 12 0 0 1 0-24 a18 18 0 0 1 35 0 a14 14 0 0 1 25 14 a10 10 0 0 1 0 10 z' fill='%23F0F8FF' opacity='0.7'/%3E%3C/svg%3E");
+    background-position:
+        15% 20%,
+        80% 75%,
+        45% 45%;
+    background-size:
+        160px 64px,
+        110px 44px,
+        140px 56px;
+    background-repeat: no-repeat;
+    opacity: 0.9;
+    animation: cloudFloat 15s ease-in-out infinite alternate;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.03));
+}
+@keyframes cloudFloat {
+    from { background-position: 15% 20%, 80% 75%, 45% 45%; }
+    to   { background-position: 17% 22%, 78% 72%, 43% 42%; }
+}
+
+/* 首页大字顶格：缩小 Hero 上内边距 */
+section.page.home .hero {
+    padding-top: 16px !important;
+}
