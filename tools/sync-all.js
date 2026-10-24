@@ -36,13 +36,13 @@ try {
   run('npx cap sync android', '2/5 同步 Android');
   run('git add -A', '3/5 暂存全部改动');
   console.log('\n[step 3.5/5] git commit');
-  try { execSync('git commit -m "' + msg.replace(/"/g, "'") + '"', { stdio: 'inherit', cwd: root }); } catch(_e){ console.log('（无改动可提交）'); }
+  try { execSync('git commit -m "' + msg.replace(/"/g, "'") + '"', { stdio: 'inherit', cwd: root }); } catch{ console.log('（无改动可提交）'); }
   console.log('\n[step 4/5] git push main');
   execSync('git push origin main', { stdio: 'inherit', cwd: root });
 
   console.log('\n[step 5/5] tag ' + tag + ' & push（触发云端打包）');
-  try { execSync('git tag -d ' + tag, { stdio: 'ignore', cwd: root }); } catch(_e){}
-  try { execSync('git push origin :refs/tags/' + tag, { stdio: 'ignore', cwd: root }); } catch(_e){}
+  try { execSync('git tag -d ' + tag, { stdio: 'ignore', cwd: root }); } catch{}
+  try { execSync('git push origin :refs/tags/' + tag, { stdio: 'ignore', cwd: root }); } catch{}
   execSync('git tag -a ' + tag + ' -m "Release ' + tag + ' 三端自动同步"', { stdio: 'inherit', cwd: root });
   execSync('git push origin ' + tag, { stdio: 'inherit', cwd: root });
 
