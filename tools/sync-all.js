@@ -32,9 +32,11 @@ function syncLinks(file){
   if (!fs.existsSync(file)) return;
   let txt = fs.readFileSync(file, 'utf8');
   const before = txt;
-  // 替换 releases/download/vX.Y.Z/ 前缀
+  // 1) README 第1行标题的 `· vX.Y.Z`
+  txt = txt.replace(/(# 蓝虎听歌（Tiger Music）·\s*)v[\d.]+/g, '$1' + tag);
+  // 2) releases/download/vX.Y.Z/ 路径前缀
   txt = txt.replace(/releases\/download\/v[\d.]+\//g, 'releases/download/' + tag + '/');
-  // 替换文件名中的版本号
+  // 3) 显示文件名 Tiger-Music-vX.Y.Z-setup/portable.exe
   txt = txt.replace(/Tiger-Music-v[\d.]+-(setup|portable)\.exe/g, 'Tiger-Music-' + tag + '-$1.exe');
   if (txt !== before) {
     fs.writeFileSync(file, txt, 'utf8');
