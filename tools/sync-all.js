@@ -27,55 +27,8 @@ const version = pkg.version;
 const tag = 'v' + version;
 console.log('发布版本号：' + version + '  tag：' + tag);
 
-// 1) 同步 README 与 app.js 中的下载链接
-function syncLinks(file){
-  if (!fs.existsSync(file)) return;
-  let txt = fs.readFileSync(file, 'utf8');
-  const before = txt;
-  // 1) README 第1行标题的 `· vX.Y.Z`
-  txt = txt.replace(/(# 蓝虎听歌（Tiger Music）·\s*)v[\d.]+/g, '$1' + tag);
-  // 2) releases/download/vX.Y.Z/ 路径前缀
-  txt = txt.replace(/releases\/download\/v[\d.]+\//g, 'releases/download/' + tag + '/');
-  // 3) 显示文件名 Tiger-Music-vX.Y.Z-setup/portable.exe
-  txt = txt.replace(/Tiger-Music-v[\d.]+-(setup|portable)\.exe/g, 'Tiger-Music-' + tag + '-$1.exe');
-  if (txt !== before) {
-    fs.writeFileSync(file, txt, 'utf8');
-    console.log('已同步链接：' + path.relative(root, file));
-  } else {
-    console.log('链接已是 ' + tag + '，跳过：' + path.relative(root, file));
-  }
-}
-syncLinks(path.join(root, 'README.md'));
-syncLinks(path.join(root, 'app', 'js', 'app.js'));
-
-// 同步 sw.js 的 CACHE 版本号（确保旧 SW 缓存被清空）
-function syncSwCache(file){
-  if (!fs.existsSync(file)) return;
-  let txt = fs.readFileSync(file, 'utf8');
-  const before = txt;
-  txt = txt.replace(/bluetiger-music-v[\d.]+/g, 'bluetiger-music-' + tag);
-  if (txt !== before) {
-    fs.writeFileSync(file, txt, 'utf8');
-    console.log('已同步 SW 缓存版本：' + path.relative(root, file));
-  } else {
-    console.log('SW 缓存已是 ' + tag + '：' + path.relative(root, file));
-  }
-}
-syncSwCache(path.join(root, 'app', 'sw.js'));
-
-// 同步 index.html 中的 ?v=X.Y.Z 参数
-function syncHtmlVersion(file){
-  if (!fs.existsSync(file)) return;
-  let txt = fs.readFileSync(file, 'utf8');
-  const before = txt;
-  txt = txt.replace(/\?v=[\d.]+/g, '?v=' + version);
-  if (txt !== before) {
-    fs.writeFileSync(file, txt, 'utf8');
-    console.log('已同步 HTML 版本参数：' + path.relative(root, file));
-  }
-}
-syncHtmlVersion(path.join(root, 'app', 'index.html'));
-
+// 1) 强制同步所有版本号
+run('node tools/bump-version.js', '0/5 统一版本号');
 const msg = process.argv[2] || ('release: 蓝虎听歌 ' + tag + ' 三端同步 ' + new Date().toISOString().slice(0, 10));
 
 try {
