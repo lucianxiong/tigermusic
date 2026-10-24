@@ -149,3 +149,4 @@ jobs:
             artifacts/windows/*.exe
             artifacts/android/*.apk
           generate_release_notes: true
+

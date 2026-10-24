@@ -22,3 +22,4 @@ const globals = {};
 [...names].sort().forEach(function(n){ globals[n] = 'writable'; });
 fs.writeFileSync(OUT, JSON.stringify(globals, null, 2) + '\n');
 console.log('wrote', Object.keys(globals).length, 'shared globals ->', OUT);
+

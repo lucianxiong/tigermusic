@@ -109,3 +109,4 @@ if (!secretHits) ok('no embedded secrets');
 
 if (failures){ console.error('\nBUILD CHECK FAILED (' + failures + ')'); process.exit(1); }
 console.log('\nBUILD CHECK PASSED');
+

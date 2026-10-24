@@ -410,3 +410,4 @@ test('neutralParams 全 0dB 直通', () => {
   assert.strictEqual(n.treble, 0);
   n.eq.forEach(function(g){ assert.strictEqual(g, 0); });
 });
+

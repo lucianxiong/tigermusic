@@ -4,3 +4,4 @@ const { contextBridge } = require('electron');
 contextBridge.exposeInMainWorld('tigerDesktop', {
   isDesktop: true
 });
+

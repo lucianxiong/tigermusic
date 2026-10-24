@@ -29,7 +29,7 @@ console.log('发布版本号：' + version + '  tag：' + tag);
 
 // 1) 强制同步所有版本号
 run('node tools/bump-version.js', '0/5 统一版本号');
-const msg = process.argv[2] || ('release: 蓝虎听歌 ' + tag + ' 三端同步 ' + new Date().toISOString().slice(0, 10));
+const msg = 'release: ' + tag;  // 强制极简格式，GitHub 灰字只显示版本号
 
 try {
   run('npm run check', '1/5 全量校验');
@@ -54,3 +54,4 @@ try {
   console.error('\nsync:all 失败：' + (e && e.message ? e.message : e));
   process.exit(1);
 }
+

@@ -198,3 +198,4 @@
     module.exports = { AudioFX: AudioFX, EQ_FREQS: EQ_FREQS, PRESETS: PRESETS, normalizeEq: normalizeEq, neutralParams: neutralParams };
   }
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
+
