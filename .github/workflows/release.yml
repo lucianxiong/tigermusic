@@ -113,10 +113,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release list --json tagName --jq '.[].tagName' | while read tag; do
-            if [ "$tag" != "${{ github.ref_name }}" ]; then
+          # 获取当前最新的 tag
+          CURRENT_TAG="${{ github.ref_name }}"
+          echo "Current tag: $CURRENT_TAG"
+          # 使用 GitHub API 直接获取所有 release 的 tag 列表
+          TAGS=$(gh release list --limit 100 --json tagName -q '.[].tagName' || true)
+          if [ -z "$TAGS" ]; then
+            echo "No releases found."
+            exit 0
+          fi
+          for tag in $TAGS; do
+            if [ "$tag" != "$CURRENT_TAG" ]; then
               echo "Deleting old release: $tag"
-              gh release delete "$tag" --yes --cleanup-tag || true
+              gh release delete "$tag" --yes --cleanup-tag || echo "Failed to delete $tag"
             fi
           done
 
