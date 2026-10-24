@@ -65,6 +65,33 @@
   }
   normalizePref();
 
+  /* ---------- 版本迁移：新版本启动时清理旧版本的技术性缓存 ----------
+   * 保留：收藏 / 最近播放 / 歌单 / 听歌统计 / 用户偏好（这些是用户资产）
+   * 清理：搜索历史 / 临时标记 / 旧版本遗留键（这些是缓存痕迹）
+   * 记录版本号到 localStorage，下次版本变化时再次触发清理 */
+  const STORE_VERSION_KEY = STORE_PREFIX + 'appVersion';
+  (function migrateVersion(){
+    let prev = null;
+    try { prev = localStorage.getItem(STORE_VERSION_KEY); } catch(e){}
+    if (prev && prev !== APP_VERSION){
+      // 版本变化：清理非用户数据缓存
+      try {
+        // 只清缓存类键，保留 favorites/recent/playlists/stats/pref
+        const cacheKeys = ['searchHistory'];
+        cacheKeys.forEach(function(k){ try { localStorage.removeItem(STORE_PREFIX + k); } catch(e){} });
+        // 清理所有带 "cache:" 前缀的临时键
+        for (let i = localStorage.length - 1; i >= 0; i--){
+          const key = localStorage.key(i);
+          if (key && key.indexOf(STORE_PREFIX + 'cache:') === 0){
+            try { localStorage.removeItem(key); } catch(e){}
+          }
+        }
+        console.log('[migrate] 旧版本缓存已清理：' + prev + ' -> ' + APP_VERSION);
+      } catch(e){}
+    }
+    try { localStorage.setItem(STORE_VERSION_KEY, APP_VERSION); } catch(e){}
+  })();
+
   function savePref(){
     store.set('pref', {
       lang: PREF.lang, theme: PREF.theme, volume: PREF.volume,
@@ -1876,6 +1903,33 @@
         }
         if (data.pref && typeof data.pref === 'object') Object.assign(PREF, data.pref);
         normalizePref();
+
+  /* ---------- 版本迁移：新版本启动时清理旧版本的技术性缓存 ----------
+   * 保留：收藏 / 最近播放 / 歌单 / 听歌统计 / 用户偏好（这些是用户资产）
+   * 清理：搜索历史 / 临时标记 / 旧版本遗留键（这些是缓存痕迹）
+   * 记录版本号到 localStorage，下次版本变化时再次触发清理 */
+  const STORE_VERSION_KEY = STORE_PREFIX + 'appVersion';
+  (function migrateVersion(){
+    let prev = null;
+    try { prev = localStorage.getItem(STORE_VERSION_KEY); } catch(e){}
+    if (prev && prev !== APP_VERSION){
+      // 版本变化：清理非用户数据缓存
+      try {
+        // 只清缓存类键，保留 favorites/recent/playlists/stats/pref
+        const cacheKeys = ['searchHistory'];
+        cacheKeys.forEach(function(k){ try { localStorage.removeItem(STORE_PREFIX + k); } catch(e){} });
+        // 清理所有带 "cache:" 前缀的临时键
+        for (let i = localStorage.length - 1; i >= 0; i--){
+          const key = localStorage.key(i);
+          if (key && key.indexOf(STORE_PREFIX + 'cache:') === 0){
+            try { localStorage.removeItem(key); } catch(e){}
+          }
+        }
+        console.log('[migrate] 旧版本缓存已清理：' + prev + ' -> ' + APP_VERSION);
+      } catch(e){}
+    }
+    try { localStorage.setItem(STORE_VERSION_KEY, APP_VERSION); } catch(e){}
+  })();
         persistFavorites(); persistRecent(); persistPlaylists(); persistStats(); savePref();
         saveList('lyricOffset', lyricsOffset);
         persistSearchHistory();
@@ -2095,6 +2149,33 @@
         clearQueue();
         Object.assign(PREF, { lang: 'zh', theme: 'auto', volume: 0.8, repeat: 'all', shuffle: false, region: 'auto', quality: 'fast', eq: { on: false, preset: 'off', bass: 0, treble: 0, bands: [] } });
         normalizePref();
+
+  /* ---------- 版本迁移：新版本启动时清理旧版本的技术性缓存 ----------
+   * 保留：收藏 / 最近播放 / 歌单 / 听歌统计 / 用户偏好（这些是用户资产）
+   * 清理：搜索历史 / 临时标记 / 旧版本遗留键（这些是缓存痕迹）
+   * 记录版本号到 localStorage，下次版本变化时再次触发清理 */
+  const STORE_VERSION_KEY = STORE_PREFIX + 'appVersion';
+  (function migrateVersion(){
+    let prev = null;
+    try { prev = localStorage.getItem(STORE_VERSION_KEY); } catch(e){}
+    if (prev && prev !== APP_VERSION){
+      // 版本变化：清理非用户数据缓存
+      try {
+        // 只清缓存类键，保留 favorites/recent/playlists/stats/pref
+        const cacheKeys = ['searchHistory'];
+        cacheKeys.forEach(function(k){ try { localStorage.removeItem(STORE_PREFIX + k); } catch(e){} });
+        // 清理所有带 "cache:" 前缀的临时键
+        for (let i = localStorage.length - 1; i >= 0; i--){
+          const key = localStorage.key(i);
+          if (key && key.indexOf(STORE_PREFIX + 'cache:') === 0){
+            try { localStorage.removeItem(key); } catch(e){}
+          }
+        }
+        console.log('[migrate] 旧版本缓存已清理：' + prev + ' -> ' + APP_VERSION);
+      } catch(e){}
+    }
+    try { localStorage.setItem(STORE_VERSION_KEY, APP_VERSION); } catch(e){}
+  })();
         /* 音效链路复位：切回正常播放元素，直连输出 */
         if (audio === fxEl) audio = baseAudio;
         baseAudio.crossOrigin = '';

@@ -120,6 +120,19 @@ jobs:
             fi
           done
 
+      - name: Delete old workflow runs & artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 删除 30 天前的旧 workflow runs（连同其 artifacts 一起清理）
+          cutoff=$(date -u -d "30 days ago" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-30d +%Y-%m-%dT%H:%M:%SZ)
+          gh run list --limit 100 --json databaseId,createdAt,status -q ".[] | select(.createdAt < \"$cutoff\") | .databaseId" | while read rid; do
+            if [ -n "$rid" ]; then
+              echo "Deleting old run: $rid"
+              gh run delete "$rid" || true
+            fi
+          done
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
