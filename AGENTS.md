@@ -29,7 +29,7 @@ npm run sync:all -- "提交信息"
 ## 发版流程
 
 1. 修改 package.json 中的 version（例如 1.0.0 → 1.0.1）
-2. 执行 `npm run sync:all -- "release: v1.0.1 ..."` 
+2. 执行 `npm run sync:all -- "release: vX.Y.Z ..."` 
 3. 等待约 2-3 分钟，云端自动打包并发布
 4. 访问 Releases 页面，确认只有最新一个版本（旧版已自动清理）
 
