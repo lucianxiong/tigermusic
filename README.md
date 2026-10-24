@@ -35,5 +35,15 @@
 * **应用下载入口**：首页底部新增 Windows 安装版/便携版与 Android APK 下载卡片。
 * **CI/CD 支持**：完善 GitHub Actions 与 Cloudflare Pages 双端自动部署。
 
+## 开发者工具 · 蓝虎 OS
+
+本项目内置统一操作系统，所有版本操作通过 CLI 完成，杜绝手动改漏：
+
+    npx tiger-os status         # 版本一致性面板
+    npx tiger-os bump 1.6.0     # 升级版本并全量同步
+    npx tiger-os release "msg"  # 一键发布三端 + GitHub Release
+
+详见 [BLUE-TIGER-OS.md](BLUE-TIGER-OS.md)。
+
 ## 开发规范
 见 [AGENTS.md](AGENTS.md)。

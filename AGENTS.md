@@ -39,6 +39,22 @@ npm run sync:all -- "提交信息"text复制下载
 - 修改前端静态资源时需同步递增：app/index.html 中所有 ?v=X.Y.Z 参数；app/sw.js 中 CACHE 常量。
 - 深浅主题装饰（日月/花朵/星空云朵）的位置与尺寸需保持 dark 与 light 严格对称，避免切换时元素跳动。
 
+## 蓝虎 OS 统一操作系统
+
+所有版本操作统一用 `npx tiger-os <command>`，禁止手动改版本号。
+
+    npx tiger-os status
+    npx tiger-os install-hooks
+    npx tiger-os bump <x.y.z>
+    npx tiger-os release "msg"
+
+详见 `BLUE-TIGER-OS.md`。
+
+**强制规则**：
+1. 所有蓝虎系列项目必须首先 `npx tiger-os install-hooks`。
+2. `npm run check` 已内置 `bump-version.js --check`。
+3. pre-commit hook 是最后防线，禁止 `--no-verify` 绕过。
+
 ## 版本历史
 
 - **v1.5.3**：全流程自动化（sync:all 自动更新 README 链接、自动打 tag 触发打包、云端自动清理旧 Release）。

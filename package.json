@@ -31,6 +31,12 @@
     "check": "npm run lint && npm run typecheck && node tools/bump-version.js --check && npm run test && npm run build",
     "sync:version": "node tools/bump-version.js",
     "sync:all": "node tools/sync-all.js",
+    "os": "node tools/tiger-os.js",
+    "os:status": "node tools/tiger-os.js status",
+    "os:doctor": "node tools/tiger-os.js doctor",
+    "os:hooks": "node tools/tiger-os.js install-hooks",
+    "os:bump": "node tools/tiger-os.js bump",
+    "os:release": "node tools/tiger-os.js release",
     "gen:globals": "node tools/gen-globals.js",
     "gen:version": "node tools/gen-version.js"
   },
