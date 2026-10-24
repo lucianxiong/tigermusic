@@ -4,6 +4,15 @@
 
 * 网页版（在线听歌）：https://lucianxiong.github.io/tigermusic
 * 源码仓库：https://github.com/lucianxiong/tigermusic
+## 下载客户端（v1.5.0）
+
+| 平台 | 版本 | 下载 |
+| --- | --- | --- |
+| Windows | 安装版 | [Tiger-Music-v1.5.0-setup.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/Tiger-Music-v1.5.0-setup.exe) |
+| Windows | 便携版 | [Tiger-Music-v1.5.0-portable.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/Tiger-Music-v1.5.0-portable.exe) |
+| Android | Debug APK | [tigermusic-debug.apk](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.0/tigermusic-debug.apk) |
+
+全部版本见 [GitHub Releases](https://github.com/lucianxiong/tigermusic/releases)。
 
 ## 主要功能
 
