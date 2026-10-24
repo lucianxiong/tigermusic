@@ -794,3 +794,22 @@ body, .topbar, .playerbar, .card, .hero, .stat-card, .playlist-card, .tb-btn, .t
 section.page.home .hero {
     padding-top: 16px !important;
 }
+
+/* ============ v1.5.1 首页下载客户端入口 ============ */
+.hero-download{
+    display:flex; align-items:center; flex-wrap:wrap; gap:8px;
+    margin:14px 0 4px; padding:12px 14px;
+    background:color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+    border:1px dashed var(--line-strong); border-radius:12px;
+    max-width:640px;
+}
+.hero-download .hd-label{
+    font-size:12.5px; font-weight:600; color:var(--text-2);
+    margin-right:2px;
+}
+.hero-download .btn.small{ padding:6px 12px; font-size:12.5px; border-radius:8px; }
+@media (max-width:480px){
+    .hero-download{ gap:6px; padding:10px 12px; }
+    .hero-download .hd-label{ flex-basis:100%; margin-bottom:2px; }
+    .hero-download .btn.small{ flex:1 1 45%; }
+}
