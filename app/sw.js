@@ -1,5 +1,5 @@
 /* 蓝虎听歌 Service Worker —— 离线可用（界面外壳缓存；在线音乐播放仍需网络） */
-const CACHE = 'bluetiger-music-v1.5.1';
+const CACHE = 'bluetiger-music-v1.5.2';
 const OFFLINE_URL = './index.html';
 const PRECACHE = [
   OFFLINE_URL,
