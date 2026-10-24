@@ -1,5 +1,5 @@
 # 蓝虎听歌 · GitHub Pages 部署工作流
-# 推送 main 后自动构建并发布网页版：https://lucianxiong.github.io/tiger-music/
+# 推送 main 后自动构建并发布网页版：https://lucianxiong.github.io/tigermusic/
 name: Deploy to GitHub Pages
 
 on:
