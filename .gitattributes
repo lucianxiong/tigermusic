@@ -1,0 +1,3 @@
+# 统一行尾：避免 core.autocrlf=true 与生成脚本(LF)冲突导致误报修改
+app/js/version.js text eol=lf
+tools/gen-version.js text eol=lf
