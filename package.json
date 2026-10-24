@@ -1,91 +1,85 @@
 {
-  "name": "tiger-music",
-  "productName": "蓝虎听歌",
-  "version": "1.5.4",
-  "description": "免费全曲音乐应用：在线搜索 Internet Archive / Audius / Openverse，本地音乐导入，歌词、收藏与歌单保存在本机",
-  "author": "蓝虎听歌",
-  "license": "UNLICENSED",
-  "private": true,
-  "main": "electron/main.js",
-  "devDependencies": {
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
-    "@eslint/js": "^10.0.1",
-    "electron": "^37.0.0",
-    "electron-builder": "^25.1.8",
-    "eslint": "^10.13.0",
-    "globals": "^17.13.0"
-  },
-  "scripts": {
-    "start": "electron .",
-    "dist:win": "electron-builder --win nsis portable",
-    "cap:add": "cap add android",
-    "cap:sync": "cap sync android",
-    "apk:debug": "cap sync android && cd android && .\\gradlew.bat assembleDebug",
-    "apk:release": "cap sync android && cd android && .\\gradlew.bat assembleRelease",
-    "lint": "node tools/gen-version.js && node tools/gen-globals.js && eslint .",
-    "typecheck": "node tools/build-check.js syntax",
-    "test": "node --test tools/test/music.test.js",
-    "build": "node tools/build-check.js full",
-    "check": "npm run lint && npm run typecheck && node tools/bump-version.js --check && npm run test && npm run build",
-    "sync:version": "node tools/bump-version.js",
-    "sync:all": "node tools/sync-all.js",
-    "os": "node tools/tiger-os.js",
-    "os:status": "node tools/tiger-os.js status",
-    "os:doctor": "node tools/tiger-os.js doctor",
-    "os:hooks": "node tools/tiger-os.js install-hooks",
-    "os:bump": "node tools/tiger-os.js bump",
-    "os:release": "node tools/tiger-os.js release",
-    "gen:globals": "node tools/gen-globals.js",
-    "gen:version": "node tools/gen-version.js"
-  },
-  "build": {
-    "appId": "com.lvhu.music",
-    "productName": "蓝虎听歌",
-    "copyright": "Copyright © 2026 蓝虎听歌",
-    "asar": true,
-    "compression": "maximum",
-    "directories": {
-      "output": "dist",
-      "buildResources": "app/assets/logo"
-    },
-    "files": [
-      "app/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "app/assets/logo/logo-256.png",
-      "artifactName": "Tiger-Music-v${version}-setup.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "蓝虎听歌",
-      "installerIcon": "app/assets/logo/logo.ico",
-      "uninstallerIcon": "app/assets/logo/logo.ico",
-      "installerHeaderIcon": "app/assets/logo/logo.ico"
-    },
-    "portable": {
-      "artifactName": "Tiger-Music-v${version}-portable.${ext}"
-    }
-  }
+    "name":  "tiger-music",
+    "productName":  "蓝虎听歌",
+    "version":  "1.0.0",
+    "description":  "免费全曲音乐应用：在线搜索 Internet Archive / Audius / Openverse，本地音乐导入，歌词、收藏与歌单保存在本机",
+    "author":  "蓝虎听歌",
+    "license":  "UNLICENSED",
+    "private":  true,
+    "main":  "electron/main.js",
+    "devDependencies":  {
+                            "@capacitor/android":  "^7.0.0",
+                            "@capacitor/cli":  "^7.0.0",
+                            "@capacitor/core":  "^7.0.0",
+                            "@eslint/js":  "^10.0.1",
+                            "electron":  "^37.0.0",
+                            "electron-builder":  "^25.1.8",
+                            "eslint":  "^10.13.0",
+                            "globals":  "^17.13.0"
+                        },
+    "scripts":  {
+                    "start":  "electron .",
+                    "dist:win":  "electron-builder --win nsis portable",
+                    "cap:add":  "cap add android",
+                    "cap:sync":  "cap sync android",
+                    "apk:debug":  "cap sync android \u0026\u0026 cd android \u0026\u0026 .\\gradlew.bat assembleDebug",
+                    "apk:release":  "cap sync android \u0026\u0026 cd android \u0026\u0026 .\\gradlew.bat assembleRelease",
+                    "lint":  "node tools/gen-version.js \u0026\u0026 node tools/gen-globals.js \u0026\u0026 eslint .",
+                    "typecheck":  "node tools/build-check.js syntax",
+                    "test":  "node --test tools/test/music.test.js",
+                    "build":  "node tools/build-check.js full",
+                    "check":  "npm run lint \u0026\u0026 npm run typecheck \u0026\u0026 node tools/bump-version.js --check \u0026\u0026 npm run test \u0026\u0026 npm run build",
+                    "sync:version":  "node tools/bump-version.js",
+                    "sync:all":  "node tools/sync-all.js",
+                    "gen:globals":  "node tools/gen-globals.js",
+                    "gen:version":  "node tools/gen-version.js"
+                },
+    "build":  {
+                  "appId":  "com.lvhu.music",
+                  "productName":  "蓝虎听歌",
+                  "copyright":  "Copyright © 2026 蓝虎听歌",
+                  "asar":  true,
+                  "compression":  "maximum",
+                  "directories":  {
+                                      "output":  "dist",
+                                      "buildResources":  "app/assets/logo"
+                                  },
+                  "files":  [
+                                "app/**/*",
+                                "electron/**/*",
+                                "package.json"
+                            ],
+                  "win":  {
+                              "target":  [
+                                             {
+                                                 "target":  "nsis",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             },
+                                             {
+                                                 "target":  "portable",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             }
+                                         ],
+                              "icon":  "app/assets/logo/logo-256.png",
+                              "artifactName":  "Tiger-Music-v${version}-setup.${ext}"
+                          },
+                  "nsis":  {
+                               "oneClick":  false,
+                               "perMachine":  false,
+                               "allowToChangeInstallationDirectory":  true,
+                               "createDesktopShortcut":  true,
+                               "createStartMenuShortcut":  true,
+                               "shortcutName":  "蓝虎听歌",
+                               "installerIcon":  "app/assets/logo/logo.ico",
+                               "uninstallerIcon":  "app/assets/logo/logo.ico",
+                               "installerHeaderIcon":  "app/assets/logo/logo.ico"
+                           },
+                  "portable":  {
+                                   "artifactName":  "Tiger-Music-v${version}-portable.${ext}"
+                               }
+              }
 }

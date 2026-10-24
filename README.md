@@ -1,4 +1,4 @@
-# 蓝虎听歌（Tiger Music）· v1.5.4
+# 蓝虎听歌（Tiger Music）· v1.0.0
 
 在线音乐应用：在线搜索试听、公共曲库全曲播放、本地音乐导入、同步歌词、收藏与歌单。
 
@@ -9,9 +9,9 @@
 ## 下载客户端
 | 平台 | 版本 | 下载 |
 | :--- | :--- | :--- |
-| Windows | 安装版 | [Tiger-Music-v1.5.4-setup.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.4/Tiger-Music-v1.5.4-setup.exe) |
-| Windows | 便携版 | [Tiger-Music-v1.5.4-portable.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.4/Tiger-Music-v1.5.4-portable.exe) |
-| Android | Debug APK | [tigermusic-debug.apk](https://github.com/lucianxiong/tigermusic/releases/download/v1.5.4/tigermusic-debug.apk) |
+| Windows | 安装版 | [Tiger-Music-v1.0.0-setup.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/Tiger-Music-v1.0.0-setup.exe) |
+| Windows | 便携版 | [Tiger-Music-v1.0.0-portable.exe](https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/Tiger-Music-v1.0.0-portable.exe) |
+| Android | Debug APK | [tigermusic-debug.apk](https://github.com/lucianxiong/tigermusic/releases/download/v1.0.0/tigermusic-debug.apk) |
 
 > 历史版本及更新日志请查看 [GitHub Releases](https://github.com/lucianxiong/tigermusic/releases)。
 
@@ -34,16 +34,6 @@
 * **统一焦点环**：全站 focus-visible 统一视觉。
 * **应用下载入口**：首页底部新增 Windows 安装版/便携版与 Android APK 下载卡片。
 * **CI/CD 支持**：完善 GitHub Actions 与 Cloudflare Pages 双端自动部署。
-
-## 开发者工具 · 蓝虎 OS
-
-本项目内置统一操作系统，所有版本操作通过 CLI 完成，杜绝手动改漏：
-
-    npx tiger-os status         # 版本一致性面板
-    npx tiger-os bump 1.6.0     # 升级版本并全量同步
-    npx tiger-os release "msg"  # 一键发布三端 + GitHub Release
-
-详见 [BLUE-TIGER-OS.md](BLUE-TIGER-OS.md)。
 
 ## 开发规范
 见 [AGENTS.md](AGENTS.md)。
