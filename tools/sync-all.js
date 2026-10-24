@@ -1,6 +1,6 @@
 /* 蓝虎听歌 · 一键发布（三端自动同步）
  *
- * 用法：npm run sync:all -- "提交信息"
+ * 用法：npm run sync:all -- "release: vX.Y.Z"
  * 步骤：1) 读取 package.json 版本号，自动更新 README / app.js 下载链接
  *       2) npm run check（lint + 语法 + 单元测试 + 构建检查）
  *       3) npx cap sync android（同步 Android 薄壳）

@@ -7,7 +7,7 @@
 1. **极简主义**：应用内『关于』页面、README、AGENTS.md 和 Release Notes 必须保持极简，禁止保留历史版本的更新日志或过时说明。
 2. **单版本同步**：任何文档或页面描述，只能反映当前唯一的版本状态（如当前版本），禁止出现诸如『某版本新增』这类跨版本残留。
 3. **发布即同步**：每次 npm run sync:all 或打 tag 发布前，必须检查并清理上述文档中的旧版本残留。
-4. **提交信息极简**：发布提交（sync:all / 打 tag）的 commit message 只写 `release: vX.Y.Z`，禁止附加任何说明、正文或额外文字；GitHub 提交列表与 Release 说明仅显示版本号，其他内容一律不写入。
+4. **提交信息统一**：全仓库所有 commit message 统一为 `release: vX.Y.Z`（使用 package.json 当前最新版本号），禁止附加任何说明、正文或额外文字；GitHub 提交列表与 Release 说明仅显示版本号，其他内容一律不写入。
 
 ## 最高指令
 
@@ -16,7 +16,7 @@
 ## 三端自动同步（一条命令发布）
 
 每次修改 app/ 后，**只需执行一条命令**：
-npm run sync:all -- "提交信息"
+npm run sync:all -- "release: vX.Y.Z"
 脚本内部自动完成：
 1. 读取 package.json 版本号，**自动同步 README.md 与 app/js/app.js 中的下载链接**（旧版本号自动替换为新版本）
 2. npm run check（lint + 语法 + 单测 + 构建检查，全绿才继续）
